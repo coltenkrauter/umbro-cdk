@@ -1,0 +1,37 @@
+{
+	"name": "@coltenkrauter/umbro-cdk",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"keywords": [
+		"typescript",
+		"umbro",
+		"infrastructure",
+		"cdk",
+		"dynamodb"
+	],
+	"author": "@coltenkrauter",
+	"license": "MIT",
+	"scripts": {
+		"bootstrap": "npm run cdk -- --app 'npm run node -- ./lib/app.ts' bootstrap",
+		"build": "tsc",
+		"cdk": "npm run node -- ./node_modules/aws-cdk/bin/cdk",
+		"deploy-all": "npm run cdk -- deploy --app 'npm run node -- ./lib/app.ts' --require-approval never --all",
+		"deploy": "npm run cdk -- deploy --app 'npm run node -- ./lib/app.ts' --require-approval never",
+		"diff": "npm run cdk -- --app 'npm run node -- ./lib/app.ts' diff",
+		"fix": "npm run lint -- --fix",
+		"lint": "npx eslint lib/**/*.ts",
+		"node": "tsx",
+		"synth": "npm run cdk -- --app 'npm run node -- ./lib/app.ts' synth",
+		"test": "npm run lint",
+		"upgrade:all": "npx npm-check-updates -u && npm install"
+	},
+	"devDependencies": {
+		"@types/node": "^22.15.23",
+		"aws-cdk": "^2.1016.1",
+		"aws-cdk-lib": "^2.199.0",
+		"constructs": "^10.4.2",
+		"tsx": "^4.19.4",
+		"typescript": "^5.8.3"
+	}
+}
