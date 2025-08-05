@@ -7,24 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Create Release
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          gh release create "$VERSION" --title "Release $VERSION" --generate-notes
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  publish:
+    uses: krauters/shared-workflows/.github/workflows/node-release.yaml@main
+    secrets:
+      GH_TOKEN_RELEASES: ${{ secrets.GH_TOKEN_RELEASES }}
