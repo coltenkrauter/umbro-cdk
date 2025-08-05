@@ -1,5 +1,8 @@
 export enum RoleName {
 	GitHubOpenId = 'GitHubDeploy',
+	VercelDeployAlpha = 'VercelDeployAlpha',
+	VercelDeployBeta = 'VercelDeployBeta',
+	VercelDeployProd = 'VercelDeployProd',
 }
 
 export interface Config {
