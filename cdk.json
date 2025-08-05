@@ -1,0 +1,13 @@
+{
+	"app": "npx tsx lib/app.ts",
+	"@aws-cdk/core:enableStackNameDuplicates": true,
+	"aws-cdk:enableDiffNoFail": true,
+	"@aws-cdk/core:stackRelativeExports": true,
+	"@aws-cdk/aws-apigateway:usagePlanKeyOrderInsensitiveId": true,
+	"@aws-cdk/core:target-partitions": [
+		"aws",
+		"aws-cn"
+	],
+	"telemetry": false,
+	"notices": false
+}

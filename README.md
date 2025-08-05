@@ -75,6 +75,13 @@ lib/
     └── security.ts                 # Security utilities
 ```
 
+## Configuration
+
+The project includes a `cdk.json` file with:
+- **Telemetry disabled** - No usage data sent to AWS
+- **Notices disabled** - No promotional messages
+- **Stack export compatibility** - For cross-stack references
+
 ## Environment Variables
 
 ### Required

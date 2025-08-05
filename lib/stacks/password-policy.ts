@@ -2,7 +2,7 @@ import type { StackProps } from 'aws-cdk-lib'
 import type { Construct } from 'constructs'
 
 import { Stack } from 'aws-cdk-lib'
-import { RetentionDays } from 'aws-cdk-lib/aws-logs'
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs'
 import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from 'aws-cdk-lib/custom-resources'
 
 /**
@@ -28,9 +28,14 @@ export class PasswordPolicyStack extends Stack {
 
 		// Enforce password policy using AwsCustomResource
 		const functionName = 'UmbroAccountPasswordPolicy'
+		const logGroup = new LogGroup(this, 'PasswordPolicyLogGroup', {
+			logGroupName: `/aws/lambda/${functionName}`,
+			retention: RetentionDays.THREE_MONTHS,
+		})
+
 		new AwsCustomResource(this, functionName, {
 			functionName,
-			logRetention: RetentionDays.THREE_MONTHS,
+			logGroup,
 			onUpdate: {
 				action: 'updateAccountPasswordPolicy',
 				parameters: passwordPolicyParams,

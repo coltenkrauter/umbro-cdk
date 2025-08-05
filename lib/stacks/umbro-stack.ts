@@ -22,7 +22,9 @@ export class UmbroStack extends Stack {
 			},
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy: RemovalPolicy.RETAIN,
-			pointInTimeRecovery: true
+			pointInTimeRecoverySpecification: {
+				pointInTimeRecoveryEnabled: true
+			}
 		})
 
 		// Add GSI for email lookups
@@ -43,7 +45,9 @@ export class UmbroStack extends Stack {
 			},
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy: RemovalPolicy.RETAIN,
-			pointInTimeRecovery: true
+			pointInTimeRecoverySpecification: {
+				pointInTimeRecoveryEnabled: true
+			}
 		})
 
 		// Add GSI for session token lookups
@@ -77,7 +81,9 @@ export class UmbroStack extends Stack {
 			},
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy: RemovalPolicy.RETAIN,
-			pointInTimeRecovery: true
+			pointInTimeRecoverySpecification: {
+				pointInTimeRecoveryEnabled: true
+			}
 		})
 
 		// Add GSI for token ID lookups
