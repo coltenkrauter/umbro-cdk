@@ -1,6 +1,6 @@
 {
 	"name": "@coltenkrauter/umbro-cdk",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"private": true,
 	"type": "module",
 	"keywords": [
@@ -27,11 +27,11 @@
 		"upgrade:all": "npx npm-check-updates -u && npm install"
 	},
 	"devDependencies": {
-		"@types/node": "^22.15.23",
-		"aws-cdk": "^2.1016.1",
-		"aws-cdk-lib": "^2.199.0",
+		"@types/node": "^24.2.0",
+		"aws-cdk": "^2.1023.0",
+		"aws-cdk-lib": "^2.208.0",
 		"constructs": "^10.4.2",
-		"tsx": "^4.19.4",
-		"typescript": "^5.8.3"
+		"tsx": "^4.20.3",
+		"typescript": "^5.9.2"
 	}
 }

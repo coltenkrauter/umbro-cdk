@@ -13,6 +13,4 @@ export interface Config {
 	}
 }
 
-export const developerEmails = [
-	'coltenkrauter@gmail.com'
-]
+export const developerEmails: string[] = []
