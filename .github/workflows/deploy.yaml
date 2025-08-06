@@ -4,6 +4,7 @@ run-name: Deploy [${{ github.head_ref || github.ref_name }}] triggered by [${{ g
 on:
   push:
     tags: '*.*.*'
+    branches: '**'
   pull_request:
     branches: 'main'
   workflow_dispatch:
@@ -13,33 +14,50 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  deploy-alpha:
+    if: github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
+    environment: Alpha
     permissions:
       actions: write
       contents: read
       id-token: write
     steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/GitHubDeploy
-          aws-region: us-east-1
-
-      - name: Checkout Repository [${{ github.head_ref || github.ref_name }}]
+      - name: Checkout Repository
         uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/deploy
         with:
-          node-version: 22
-          cache: npm
+          environment: Alpha
+          aws-account-id: ${{ vars.AWS_ACCOUNT_ID }}
 
-      - name: Install Dependencies
-        run: npm ci
+  deploy-beta:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: Beta
+    permissions:
+      actions: write
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - uses: ./.github/actions/deploy
+        with:
+          environment: Beta
+          aws-account-id: ${{ vars.AWS_ACCOUNT_ID }}
 
-      - name: Diff
-        run: npm run diff
-
-      - name: Deploy changes for [${{ github.head_ref || github.ref_name }}]
-        if: startsWith(github.ref, 'refs/tags/')
-        run: npm run deploy-all
+  deploy-production:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    environment: Production
+    permissions:
+      actions: write
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - uses: ./.github/actions/deploy
+        with:
+          environment: Production
+          aws-account-id: ${{ vars.AWS_ACCOUNT_ID }}
