@@ -1,12 +1,32 @@
 # umbro-cdk
 
-This repository contains an AWS CDK package written in TypeScript that manages the complete AWS infrastructure required to support the Umbro application. It includes DynamoDB tables, OIDC providers for secure deployments, user management, and security monitoring.
+This repository contains an AWS CDK package written in TypeScript that manages the AWS infrastructure required to support the Umbro application. **This package only handles AWS infrastructure via CDK - the actual application is deployed on Vercel for ease and cost reduction.**
+
+## What This Package Does
+
+This package provides:
+- **AWS Infrastructure as Code** - DynamoDB tables, IAM roles, security policies
+- **Vercel OIDC Integration** - Secure deployments from Vercel to AWS
+- **Backend Services** - Database, authentication, and API infrastructure
+
+## What This Package Does NOT Do
+
+This package does NOT contain:
+- **Frontend Application Code** - That's in the main [umbro](https://github.com/coltenkrauter/umbro) repository
+- **Vercel Deployment** - The app is deployed on Vercel, this just provides AWS backend
+- **Application Logic** - Business logic is in the main application repository
 
 ## Prerequisites
 
 - Node.js (v18 or later)
 - AWS CLI configured with appropriate credentials
 - AWS CDK CLI installed globally: `npm install -g aws-cdk`
+
+## Account Provisioning & GitHub OIDC
+
+**Important**: Account provisioning and GitHub OIDC configuration are now handled automatically by the [Venice](https://github.com/coltenkrauter/venice) package. Venice is a CDK automation repository that uses GitHub Actions to configure accounts and set up GitHub OIDC providers automatically.
+
+This means you no longer need to manually set up AWS accounts or configure GitHub OIDC - Venice handles all of that infrastructure automatically.
 
 ## Getting Started
 
@@ -15,22 +35,45 @@ This repository contains an AWS CDK package written in TypeScript that manages t
    npm install
    ```
 
-2. **Bootstrap CDK (first time only)**
+2. **Configure AWS Credentials**
    ```bash
-   npm run bootstrap
+   aws configure
+   # Set region to us-east-1 and provide your access keys
    ```
 
 3. **Deploy Infrastructure**
    ```bash
-   npm run deploy
+   # Development environment
+   export STAGE=dev
+   npm run deploy-all
+
+   # Staging environment  
+   export STAGE=staging
+   npm run deploy-all
+
+   # Production environment
+   export STAGE=prod
+   npm run deploy-all
    ```
+
+See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for detailed deployment guide.
+
+## What You Need to Deploy
+
+Since Venice handles account provisioning and GitHub OIDC, you only need to deploy the application-specific infrastructure:
+
+- **UmbroVercelOIDC** - Vercel OIDC provider for multi-environment deployments  
+- **UmbroPasswordPolicy** - Account password requirements
+- **UmbroSecurityMonitoring** - CloudTrail and security alerts
+- **UmbroUsers** - IAM users, groups, and roles
+- **UmbroStack** - DynamoDB tables (users, sessions, service-tokens)
 
 ## Available Scripts
 
 - `npm run build` - Compile TypeScript
 - `npm run synth` - Synthesize CloudFormation templates
 - `npm run diff` - Show differences between deployed stack and current code
-- `npm run deploy` - Deploy the stack
+- `npm run deploy` - Deploy single stack
 - `npm run deploy-all` - Deploy all stacks
 - `npm run lint` - Run ESLint
 - `npm run test` - Run tests (currently just linting)
@@ -38,7 +81,6 @@ This repository contains an AWS CDK package written in TypeScript that manages t
 ## Infrastructure Components
 
 ### OIDC Providers
-- **GitHub OIDC** - Secure CI/CD deployments from GitHub Actions
 - **Vercel OIDC** - Multi-environment deployments (alpha, beta, prod) from Vercel
 
 ### DynamoDB Tables
@@ -60,7 +102,6 @@ lib/
 ├── config.ts                       # Configuration and environment settings
 ├── structures.ts                   # Shared enums and interfaces
 ├── stacks/                         # CDK stack definitions
-│   ├── github-open-id-connect.ts   # GitHub OIDC provider
 │   ├── vercel-open-id-connect.ts   # Vercel OIDC provider
 │   ├── umbro-stack.ts              # DynamoDB infrastructure
 │   ├── users.ts                    # User management
@@ -134,6 +175,11 @@ This script will output the role ARNs for each environment, making it easy to co
 ## Development
 
 The project is structured to be simple and extensible. Add new DynamoDB tables or other AWS resources in the `UmbroStack` class as needed.
+
+## Related Repositories
+
+- **[umbro](https://github.com/coltenkrauter/umbro)** - Main application (deployed on Vercel)
+- **[venice](https://github.com/coltenkrauter/venice)** - Account provisioning and GitHub OIDC automation
 
 ## License
 
