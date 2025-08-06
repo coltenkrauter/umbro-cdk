@@ -1,0 +1,39 @@
+name: Deploy to Environment
+description: Deploy CDK stack to specified environment
+
+inputs:
+  environment:
+    description: Environment to deploy to (Alpha, Beta, Production)
+    required: true
+  aws-account-id:
+    description: AWS Account ID to deploy to
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::${{ inputs.aws-account-id }}:role/GitHubDeploy
+        aws-region: us-east-1
+
+    - name: Checkout Repository [${{ github.head_ref || github.ref_name }}]
+      uses: actions/checkout@v4
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+        cache: npm
+
+    - name: Install Dependencies
+      shell: bash
+      run: npm ci
+
+    - name: Diff
+      shell: bash
+      run: STAGE=${{ inputs.environment }} npm run diff
+
+    - name: Deploy changes for [${{ github.head_ref || github.ref_name }}]
+      shell: bash
+      run: STAGE=${{ inputs.environment }} npm run deploy-all 
