@@ -1,98 +1,39 @@
-import { RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib'
-import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb'
+import { Stack, StackProps } from 'aws-cdk-lib'
 import { Construct } from 'constructs'
+import { Stage } from '@krauters/structures'
+
+import { DynamoDBConstruct } from '../constructs/dynamodb.js'
+
+export interface UmbroStackProps extends StackProps {
+	stage: Stage
+}
 
 /**
  * Main stack for Umbro DynamoDB infrastructure.
  */
 export class UmbroStack extends Stack {
-	public readonly usersTable: Table
-	public readonly sessionsTable: Table
-	public readonly serviceTokensTable: Table
+	public readonly database: DynamoDBConstruct
 
-	constructor(scope: Construct, id: string, props?: StackProps) {
+	constructor(scope: Construct, id: string, props: UmbroStackProps) {
 		super(scope, id, props)
 
-		// Users table
-		this.usersTable = new Table(this, 'UmbroUsersTable', {
-			tableName: 'umbro-users',
-			partitionKey: {
-				name: 'id',
-				type: AttributeType.STRING
-			},
-			billingMode: BillingMode.PAY_PER_REQUEST,
-			removalPolicy: RemovalPolicy.RETAIN,
-			pointInTimeRecoverySpecification: {
-				pointInTimeRecoveryEnabled: true
-			}
-		})
+		const { stage } = props
 
-		// Add GSI for email lookups
-		this.usersTable.addGlobalSecondaryIndex({
-			indexName: 'email-index',
-			partitionKey: {
-				name: 'email',
-				type: AttributeType.STRING
-			}
+		this.database = new DynamoDBConstruct(this, 'Database', {
+			stage
 		})
+	}
 
-		// Sessions table
-		this.sessionsTable = new Table(this, 'UmbroSessionsTable', {
-			tableName: 'umbro-sessions',
-			partitionKey: {
-				name: 'id',
-				type: AttributeType.STRING
-			},
-			billingMode: BillingMode.PAY_PER_REQUEST,
-			removalPolicy: RemovalPolicy.RETAIN,
-			pointInTimeRecoverySpecification: {
-				pointInTimeRecoveryEnabled: true
-			}
-		})
+	// Convenience getters for backward compatibility
+	get usersTable() {
+		return this.database.usersTable
+	}
 
-		// Add GSI for session token lookups
-		this.sessionsTable.addGlobalSecondaryIndex({
-			indexName: 'session-token-index',
-			partitionKey: {
-				name: 'session_token',
-				type: AttributeType.STRING
-			}
-		})
+	get sessionsTable() {
+		return this.database.sessionsTable
+	}
 
-		// Add GSI for user sessions
-		this.sessionsTable.addGlobalSecondaryIndex({
-			indexName: 'user-sessions-index',
-			partitionKey: {
-				name: 'user_id',
-				type: AttributeType.STRING
-			}
-		})
-
-		// Service tokens table
-		this.serviceTokensTable = new Table(this, 'UmbroServiceTokensTable', {
-			tableName: 'umbro-service-tokens',
-			partitionKey: {
-				name: 'user_id',
-				type: AttributeType.STRING
-			},
-			sortKey: {
-				name: 'token_name',
-				type: AttributeType.STRING
-			},
-			billingMode: BillingMode.PAY_PER_REQUEST,
-			removalPolicy: RemovalPolicy.RETAIN,
-			pointInTimeRecoverySpecification: {
-				pointInTimeRecoveryEnabled: true
-			}
-		})
-
-		// Add GSI for token ID lookups
-		this.serviceTokensTable.addGlobalSecondaryIndex({
-			indexName: 'token-id-index',
-			partitionKey: {
-				name: 'id',
-				type: AttributeType.STRING
-			}
-		})
+	get serviceTokensTable() {
+		return this.database.serviceTokensTable
 	}
 }

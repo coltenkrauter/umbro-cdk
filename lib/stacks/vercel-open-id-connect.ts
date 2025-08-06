@@ -18,15 +18,15 @@ export interface VercelOpenIDConnectStackProps extends StackProps {
 	readonly maxSessionDuration?: Duration
 	readonly teamSlug: string
 	readonly projectName: string
-	readonly stages?: string[]
+	readonly stage: string
 	readonly issuerMode?: 'team' | 'global'
 }
 
 /**
- * Stack that creates Vercel OIDC provider for secure deployments across multiple environments.
+ * Stack that creates Vercel OIDC provider for secure application access for a single stage.
  */
 export class VercelOpenIDConnectStack extends Stack {
-	roles!: Record<string, Role>
+	public readonly role: Role
 
 	constructor(scope: Construct, id: string, props: VercelOpenIDConnectStackProps) {
 		super(scope, id, props)
@@ -35,7 +35,7 @@ export class VercelOpenIDConnectStack extends Stack {
 			maxSessionDuration = Duration.hours(6),
 			teamSlug,
 			projectName,
-			stages = ['alpha', 'beta', 'prod'],
+			stage,
 			issuerMode = 'team',
 		} = props
 
@@ -51,62 +51,35 @@ export class VercelOpenIDConnectStack extends Stack {
 			url: vercelOidcUrl,
 		})
 
-		// Initialize roles record
-		this.roles = {}
-
-		// Create a role for each stage
-		for (const stage of stages) {
-			const roleName = `VercelDeploy${stage.charAt(0).toUpperCase()}${stage.slice(1)}`
-			
-			// Create trust policy conditions for this specific stage
-			const conditions: Conditions = {
-				StringEquals: {
-					[`${vercelOidcUrl.replace('https://', '')}:aud`]: audienceValue,
-					[`${vercelOidcUrl.replace('https://', '')}:sub`]: `owner:${teamSlug}:project:${projectName}:environment:${stage}`,
-				},
-			}
-
-			// Create role for this stage
-			const role = new Role(this, `Umbro${roleName}`, {
-				assumedBy: new WebIdentityPrincipal(provider.openIdConnectProviderArn, conditions),
-				description: `Vercel deployment role for ${stage} environment`,
-				maxSessionDuration,
-				roleName,
-			})
-
-			// Grant necessary permissions for deployments
-			grantAssumeAndPassRolePermissions(role)
-			grantCloudFormationWritePermissions(role)
-			grantDynamoDbWritePermissions(role)
-			grantS3WritePermissions(role)
-			grantSsmParameterStoreReadPermissions(role)
-
-			role.applyRemovalPolicy(RemovalPolicy.DESTROY)
-
-			// Store the role in our record
-			this.roles[stage] = role
+		const roleName = `VercelApp${stage.charAt(0).toUpperCase()}${stage.slice(1)}`
+		
+		// Create trust policy conditions for this specific stage
+		const conditions: Conditions = {
+			StringEquals: {
+				[`${vercelOidcUrl.replace('https://', '')}:aud`]: audienceValue,
+				[`${vercelOidcUrl.replace('https://', '')}:sub`]: `owner:${teamSlug}:project:${projectName}:environment:${stage}`,
+			},
 		}
+
+		// Create role for this stage only
+		this.role = new Role(this, `Umbro${roleName}`, {
+			assumedBy: new WebIdentityPrincipal(provider.openIdConnectProviderArn, conditions),
+			description: `Vercel application role for ${stage} environment`,
+			maxSessionDuration,
+			roleName,
+		})
+
+		// Grant necessary permissions for application runtime
+		grantDynamoDbWritePermissions(this.role)
+		grantSsmParameterStoreReadPermissions(this.role)
+
+		this.role.applyRemovalPolicy(RemovalPolicy.DESTROY)
 	}
 
 	/**
-	 * Get role ARN for a specific stage
+	 * Get role ARN for the current stage
 	 */
-	getRoleArn(stage: string): string {
-		const role = this.roles[stage]
-		if (!role) {
-			throw new Error(`Role for stage '${stage}' not found`)
-		}
-		return role.roleArn
-	}
-
-	/**
-	 * Get all role ARNs as a record
-	 */
-	getAllRoleArns(): Record<string, string> {
-		const arns: Record<string, string> = {}
-		for (const [stage, role] of Object.entries(this.roles)) {
-			arns[stage] = role.roleArn
-		}
-		return arns
+	getRoleArn(): string {
+		return this.role.roleArn
 	}
 }

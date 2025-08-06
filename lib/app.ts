@@ -23,11 +23,9 @@ function main() {
 		...config.stackProps,
 		teamSlug: process.env.VERCEL_TEAM_SLUG || 'colten-krauters-projects',
 		projectName: process.env.VERCEL_PROJECT_NAME || 'umbro',
-		stages: ['alpha', 'beta', 'prod'],
+		stage: config.stage.toLowerCase(),
 	})
 
-	// TODO: Uncomment these stacks once Vercel OIDC is working
-	/*
 	new PasswordPolicyStack(app, 'UmbroPasswordPolicy', {
 		env: config.env,
 		...config.stackProps,
@@ -46,19 +44,18 @@ function main() {
 	const umbroStack = new UmbroStack(app, 'UmbroStack', {
 		env: config.env,
 		...config.stackProps,
+		stage: config.stage,
 	})
 
-	// Grant Vercel OIDC roles permissions to DynamoDB tables
-	// No cross-stack dependencies - just direct permission grants
+	// Grant Vercel OIDC role permissions to DynamoDB tables for current stage only
 	grantDynamoDBAccess({
-		roles: vercelOidcStack.roles,
+		role: vercelOidcStack.role,
 		tables: {
 			users: umbroStack.usersTable,
 			sessions: umbroStack.sessionsTable,
 			serviceTokens: umbroStack.serviceTokensTable,
 		},
 	})
-	*/
 }
 
 main()
