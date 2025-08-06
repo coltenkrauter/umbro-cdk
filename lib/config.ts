@@ -1,7 +1,9 @@
 import { Environment } from 'aws-cdk-lib'
+import { Stage } from '@krauters/structures'
 
 export interface Config {
 	env: Environment
+	stage: Stage
 	stackProps: {
 		description: string
 		tags: Record<string, string>
@@ -14,10 +16,19 @@ export interface Config {
 export function getConfig(): Config {
 	const account = process.env.CDK_DEFAULT_ACCOUNT
 	const region = process.env.CDK_DEFAULT_REGION || 'us-east-1'
-	const stage = process.env.STAGE || 'dev'
+	const stageInput = process.env.STAGE || 'dev'
 
 	if (!account) {
 		throw new Error('CDK_DEFAULT_ACCOUNT environment variable is required')
+	}
+
+	// Validate and convert stage using enum
+	const stageKey = stageInput as keyof typeof Stage
+	const stage = Stage[stageKey]
+	
+	if (!stage) {
+		const validStages = Object.values(Stage).join(', ')
+		throw new Error(`Invalid STAGE "${stageInput}". Valid options: ${validStages}`)
 	}
 
 	return {
@@ -25,12 +36,13 @@ export function getConfig(): Config {
 			account,
 			region
 		},
+		stage,
 		stackProps: {
-			description: 'Complete Umbro infrastructure (OIDC, users, security, application)',
+			description: `Complete Umbro infrastructure for ${stage} environment (OIDC, users, security, application)`,
 			tags: {
-				Project: 'Umbro',
-				Stage: stage,
-				ManagedBy: 'CDK'
+				Environment: stage,
+				ManagedBy: 'CDK',
+				Project: 'Umbro'
 			}
 		}
 	}

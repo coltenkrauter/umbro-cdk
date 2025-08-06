@@ -1,23 +1,29 @@
 # Umbro — Infrastructure Overview
 
-**Umbro** is a modern web application with a focus on user management, authentication, and service tokens. The infrastructure is designed to be secure, scalable, and cost-effective using AWS services.
+**Umbro** is a modern web application with a focus on user management, authentication, and service tokens. The infrastructure is designed to be secure, scalable, and cost-effective using AWS services for backend infrastructure while the application itself is deployed on Vercel.
 
 ## Architecture
 
-The Umbro infrastructure is split between two types of AWS accounts:
+The Umbro infrastructure leverages the [Venice](https://github.com/coltenkrauter/venice) package for account provisioning and GitHub OIDC configuration. Venice automatically handles:
 
-### Root Account
-Contains organization-level resources:
+- **Account Provisioning** - Automated AWS account setup and configuration
 - **GitHub OIDC Provider** - Secure GitHub Actions deployments without long-lived credentials
-- **IAM Users & Roles** - Developer access with MFA enforcement
-- **Security Monitoring** - CloudTrail logging and security alerts
-- **Password Policy** - Account-wide strong password requirements
+- **Organization-level Security** - IAM users, roles, and security monitoring
 
-### Application Accounts
-Contains application-specific resources:
+This allows the umbro-cdk package to focus on application-specific infrastructure:
+
+### Application Infrastructure (AWS)
 - **DynamoDB Tables** - User data, sessions, and service tokens
+- **Vercel OIDC Provider** - Multi-environment deployments from Vercel
+- **Application Security** - Password policies and monitoring specific to the application
 - **Pay-per-request billing** - Cost-effective scaling
 - **Point-in-time recovery** - Data protection
+
+### Application Deployment (Vercel)
+- **Frontend Application** - Next.js application deployed on Vercel
+- **Serverless Functions** - API routes and backend logic
+- **Edge Functions** - Global performance optimization
+- **Automatic Scaling** - Vercel handles scaling and performance
 
 ## Core Infrastructure Components
 
@@ -40,11 +46,18 @@ Contains application-specific resources:
 
 ## Deployment Strategy
 
-Infrastructure deployment follows a staged approach:
+Infrastructure deployment follows a simplified approach thanks to Venice:
 
-1. **Root Account Setup** - One-time deployment of organization resources
-2. **Application Account Setup** - Per-environment deployment of application resources
-3. **GitHub Actions Integration** - Automated deployments using OIDC
+1. **Account Provisioning** - Handled automatically by Venice (GitHub OIDC, IAM users, security policies)
+2. **Application Infrastructure** - Deploy AWS backend resources using umbro-cdk
+3. **Application Deployment** - Deploy frontend application on Vercel (separate repository)
+4. **GitHub Actions Integration** - Automated deployments using OIDC (configured by Venice)
+
+## Repository Structure
+
+- **[umbro](https://github.com/coltenkrauter/umbro)** - Main application (Next.js, deployed on Vercel)
+- **[umbro-cdk](https://github.com/coltenkrauter/umbro-cdk)** - AWS infrastructure (this repository)
+- **[venice](https://github.com/coltenkrauter/venice)** - Account provisioning and automation
 
 ## Security Best Practices
 
@@ -57,6 +70,17 @@ Infrastructure deployment follows a staged approach:
 ## Cost Optimization
 
 - **Pay-per-request DynamoDB** - Only pay for actual usage
+- **Vercel Edge Functions** - Global performance with minimal cost
 - **CloudWatch log retention** - Automatic cleanup of old logs
 - **Resource tagging** - Track costs by project and environment
 - **Minimal always-on resources** - Most services scale to zero when not in use
+
+## What You Need to Deploy
+
+Since Venice handles account-level infrastructure, you only need to ensure:
+
+1. **AWS Account ID** is available in your GitHub repository variables (handled by Venice)
+2. **AWS Region** is configured (defaults to us-east-1)
+3. **Environment Variables** are set for your deployment stage
+
+The GitHub OIDC provider and account-level security policies are automatically configured by Venice, so you can focus on deploying just the application-specific resources.
