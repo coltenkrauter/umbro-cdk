@@ -57,7 +57,7 @@ export class VercelOpenIDConnectStack extends Stack {
 		const conditions: Conditions = {
 			StringEquals: {
 				[`${vercelOidcUrl.replace('https://', '')}:aud`]: audienceValue,
-				[`${vercelOidcUrl.replace('https://', '')}:sub`]: `owner:${teamSlug}:project:${projectName}:environment:${stage}`,
+				[`${vercelOidcUrl.replace('https://', '')}:sub`]: `owner:${teamSlug}:project:${projectName}:environment:${stage.toLowerCase()}`,
 			},
 		}
 
