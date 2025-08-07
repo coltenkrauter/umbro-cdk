@@ -7,6 +7,7 @@ export interface Config {
 	stackProps: {
 		description: string
 		tags: Record<string, string>
+		terminationProtection: boolean
 	}
 }
 
@@ -38,12 +39,13 @@ export function getConfig(): Config {
 		},
 		stage,
 		stackProps: {
-			description: `Complete Umbro infrastructure for ${stage} environment (OIDC, users, security, application)`,
+			description: `Umbro infrastructure for ${stage} environment`,
 			tags: {
 				Environment: stage,
 				ManagedBy: 'CDK',
 				Project: 'Umbro'
-			}
+			},
+			terminationProtection: stage === Stage.Production
 		}
 	}
 }

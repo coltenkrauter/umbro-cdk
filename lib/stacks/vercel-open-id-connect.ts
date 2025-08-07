@@ -4,6 +4,7 @@ import type { Construct } from 'constructs'
 
 import { Duration, RemovalPolicy, Stack } from 'aws-cdk-lib'
 import { OpenIdConnectProvider, Role, WebIdentityPrincipal } from 'aws-cdk-lib/aws-iam'
+import { Stage } from '@krauters/structures'
 
 import {
 	grantAssumeAndPassRolePermissions,
@@ -18,13 +19,25 @@ export interface VercelOpenIDConnectStackProps extends StackProps {
 	readonly maxSessionDuration?: Duration
 	readonly teamSlug: string
 	readonly projectName: string
-	readonly stage: string
+	readonly stage: Stage
 	readonly issuerMode?: 'team' | 'global'
 }
 
-/**
- * Stack that creates Vercel OIDC provider for secure application access for a single stage.
- */
+function mapStageToVercelEnvironment(stage: Stage): string[] {
+	switch (stage) {
+		case Stage.Alpha:
+			return ['development', 'preview']
+		case Stage.Production:
+			return ['production']
+		default:
+			return [stage.toLowerCase()]
+	}
+}
+
+function createSubjectClaim(teamSlug: string, projectName: string, environment: string): string {
+	return ['owner', teamSlug, 'project', projectName, 'environment', environment].join(':')
+}
+
 export class VercelOpenIDConnectStack extends Stack {
 	public readonly role: Role
 
@@ -39,8 +52,8 @@ export class VercelOpenIDConnectStack extends Stack {
 			issuerMode = 'team',
 		} = props
 
-		// Create OIDC provider
-		const vercelOidcUrl = issuerMode === 'team' 
+		const isTeamMode = issuerMode === 'team'
+		const vercelOidcUrl = isTeamMode 
 			? `https://oidc.vercel.com/${teamSlug}`
 			: 'https://oidc.vercel.com'
 		
@@ -51,34 +64,40 @@ export class VercelOpenIDConnectStack extends Stack {
 			url: vercelOidcUrl,
 		})
 
-		const roleName = `VercelApp${stage.charAt(0).toUpperCase()}${stage.slice(1)}`
+		const stageCapitalized = stage.charAt(0).toUpperCase() + stage.slice(1)
+		const roleName = `VercelApp${stageCapitalized}`
 		
-		// Create trust policy conditions for this specific stage
+		const vercelEnvironments = mapStageToVercelEnvironment(stage)
+		console.log(`🔧 [OIDC] Stage '${stage}' mapped to Vercel environments: [${vercelEnvironments.join(', ')}]`)
+		
+		const oidcUrlWithoutProtocol = vercelOidcUrl.replace('https://', '')
 		const conditions: Conditions = {
 			StringEquals: {
-				[`${vercelOidcUrl.replace('https://', '')}:aud`]: audienceValue,
-				[`${vercelOidcUrl.replace('https://', '')}:sub`]: `owner:${teamSlug}:project:${projectName}:environment:${stage}`,
+				[`${oidcUrlWithoutProtocol}:aud`]: audienceValue,
 			},
 		}
 
-		// Create role for this stage only
+		const subKey = `${oidcUrlWithoutProtocol}:sub`
+		const subjectClaims = vercelEnvironments.map(env => createSubjectClaim(teamSlug, projectName, env))
+		
+		const stringEquals = conditions.StringEquals as Record<string, string | string[]>
+		stringEquals[subKey] = subjectClaims.length === 1 ? subjectClaims[0] : subjectClaims
+
+		const roleDescription = `Vercel application role for ${stage} environment (allows: ${vercelEnvironments.join(', ')})`
+
 		this.role = new Role(this, `Umbro${roleName}`, {
 			assumedBy: new WebIdentityPrincipal(provider.openIdConnectProviderArn, conditions),
-			description: `Vercel application role for ${stage} environment`,
+			description: roleDescription,
 			maxSessionDuration,
 			roleName,
 		})
 
-		// Grant necessary permissions for application runtime
 		grantDynamoDbWritePermissions(this.role)
 		grantSsmParameterStoreReadPermissions(this.role)
 
 		this.role.applyRemovalPolicy(RemovalPolicy.DESTROY)
 	}
 
-	/**
-	 * Get role ARN for the current stage
-	 */
 	getRoleArn(): string {
 		return this.role.roleArn
 	}
