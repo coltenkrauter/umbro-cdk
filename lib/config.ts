@@ -38,7 +38,7 @@ export function getConfig(): Config {
 		},
 		stage,
 		stackProps: {
-			description: `Complete Umbro infrastructure for ${stage} environment (OIDC, users, security, application)`,
+			description: `Umbro infrastructure for ${stage} environment`,
 			tags: {
 				Environment: stage,
 				ManagedBy: 'CDK',

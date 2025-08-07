@@ -11,6 +11,7 @@ const app = new App()
 const vercelOidcStack = new VercelOpenIDConnectStack(app, 'UmbroVercelOIDC', {
 	env: config.env,
 	...config.stackProps,
+	description: `Vercel OIDC provider and role for ${config.stage} environment`,
 	teamSlug: process.env.VERCEL_TEAM_SLUG || 'colten-krauters-projects',
 	projectName: process.env.VERCEL_PROJECT_NAME || 'umbro',
 	stage: config.stage.toLowerCase(),
@@ -19,6 +20,7 @@ const vercelOidcStack = new VercelOpenIDConnectStack(app, 'UmbroVercelOIDC', {
 const umbroStack = new UmbroStack(app, 'UmbroStack', {
 	env: config.env,
 	...config.stackProps,
+	description: `DynamoDB tables for ${config.stage} environment`,
 	stage: config.stage,
 })
 
