@@ -8,17 +8,22 @@ import { grantDynamoDBAccess } from './utils/integration.js'
 const config = getConfig()
 const app = new App()
 
-const vercelOidcStack = new VercelOpenIDConnectStack(app, 'UmbroVercelOIDC', {
+const commonProps = {
 	env: config.env,
 	...config.stackProps,
+}
+
+const vercelOidcStack = new VercelOpenIDConnectStack(app, 'UmbroVercelOIDC', {
+	...commonProps,
+	description: `Vercel OIDC provider and role for ${config.stage} environment`,
 	teamSlug: process.env.VERCEL_TEAM_SLUG || 'colten-krauters-projects',
 	projectName: process.env.VERCEL_PROJECT_NAME || 'umbro',
-	stage: config.stage.toLowerCase(),
+	stage: config.stage,
 })
 
 const umbroStack = new UmbroStack(app, 'UmbroStack', {
-	env: config.env,
-	...config.stackProps,
+	...commonProps,
+	description: `DynamoDB tables for ${config.stage} environment`,
 	stage: config.stage,
 })
 
