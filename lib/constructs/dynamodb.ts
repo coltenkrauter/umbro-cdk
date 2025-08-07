@@ -57,7 +57,7 @@ export class DynamoDBConstruct extends Construct {
 
 		// GSI for email lookups (Auth.js requirement)
 		this.usersTable.addGlobalSecondaryIndex({
-			indexName: 'email-index',
+			indexName: 'UsersByEmailIndex',
 			partitionKey: {
 				name: 'email',
 				type: AttributeType.STRING
@@ -83,7 +83,7 @@ export class DynamoDBConstruct extends Construct {
 
 		// GSI for user sessions lookup
 		this.sessionsTable.addGlobalSecondaryIndex({
-			indexName: 'user-sessions-index',
+			indexName: 'SessionsByUserIdIndex',
 			partitionKey: {
 				name: 'userId',
 				type: AttributeType.STRING
@@ -113,37 +113,25 @@ export class DynamoDBConstruct extends Construct {
 
 		// GSI for token ID lookups (unique access)
 		this.serviceTokensTable.addGlobalSecondaryIndex({
-			indexName: 'token-id-index',
+			indexName: 'ServiceTokensByIdIndex',
 			partitionKey: {
 				name: 'id',
 				type: AttributeType.STRING
 			}
 		})
 
-		// GSI for token name lookups within user scope
+		// GSI for finding tokens by user and name (useful for duplicate checking)
 		this.serviceTokensTable.addGlobalSecondaryIndex({
-			indexName: 'user-token-name-index',
-			partitionKey: {
-				name: 'userId',
-				type: AttributeType.STRING
-			},
-			sortKey: {
-				name: 'tokenName',
-				type: AttributeType.STRING
-			}
+			indexName: 'ServiceTokensByUserAndNameIndex',
+			partitionKey: { name: 'userId', type: AttributeType.STRING },
+			sortKey: { name: 'tokenName', type: AttributeType.STRING }
 		})
 
-		// GSI for non-removed tokens query pattern
+		// GSI for querying active/inactive tokens with expiration filtering
 		this.serviceTokensTable.addGlobalSecondaryIndex({
-			indexName: 'active-tokens-index',
-			partitionKey: {
-				name: 'removed',
-				type: AttributeType.STRING // 'false' for active, 'true' for soft deleted
-			},
-			sortKey: {
-				name: 'expiresAt',
-				type: AttributeType.STRING // ISO 8601 for expiration sorting
-			}
+			indexName: 'ServiceTokensByStatusAndExpirationIndex',
+			partitionKey: { name: 'removed', type: AttributeType.STRING },
+			sortKey: { name: 'expiresAt', type: AttributeType.STRING }
 		})
 	}
 }
