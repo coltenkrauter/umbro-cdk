@@ -1,6 +1,6 @@
 {
 	"name": "@coltenkrauter/umbro-cdk",
-	"version": "0.9.0",
+	"version": "0.11.0",
 	"private": true,
 	"type": "module",
 	"keywords": [
@@ -25,11 +25,15 @@
 		"node": "tsx",
 		"synth": "npm run cdk -- --app 'npm run node -- ./lib/app.ts' synth",
 		"test": "npm run lint",
-		"upgrade:all": "npx npm-check-updates -u && npm install"
+		"update-vercel-env": "npm run node -- ./scripts/update-vercel-env.ts",
+		"upgrade:all": "npx npm-check-updates -u && npm install",
+		"verify-setup": "npm run node -- ./scripts/verify-setup.ts"
 	},
 	"dependencies": {
+		"@aws-sdk/client-cloudformation": "^3.863.0",
 		"@aws-sdk/client-dynamodb": "^3.863.0",
-		"@krauters/structures": "^1.3.0"
+		"@krauters/structures": "^1.3.0",
+		"@vercel/sdk": "^1.0.0"
 	},
 	"devDependencies": {
 		"@types/node": "^24.2.0",

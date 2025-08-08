@@ -2,7 +2,7 @@ import type { Environment, StackProps } from 'aws-cdk-lib'
 import type { Conditions } from 'aws-cdk-lib/aws-iam'
 import type { Construct } from 'constructs'
 
-import { Duration, RemovalPolicy, Stack } from 'aws-cdk-lib'
+import { CfnOutput, Duration, RemovalPolicy, Stack } from 'aws-cdk-lib'
 import { OpenIdConnectProvider, Role, WebIdentityPrincipal } from 'aws-cdk-lib/aws-iam'
 import { Stage } from '@krauters/structures'
 
@@ -96,6 +96,13 @@ export class VercelOpenIDConnectStack extends Stack {
 		grantSsmParameterStoreReadPermissions(this.role)
 
 		this.role.applyRemovalPolicy(RemovalPolicy.DESTROY)
+
+		// CloudFormation output for Vercel role ARN
+		new CfnOutput(this, 'VercelRoleArn', {
+			value: this.role.roleArn,
+			description: 'Vercel OIDC Role ARN',
+			exportName: `VercelOIDC-${stage}-RoleArn`
+		})
 	}
 
 	getRoleArn(): string {
