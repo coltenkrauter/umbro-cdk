@@ -3,7 +3,7 @@ import { App } from 'aws-cdk-lib'
 import { getConfig } from './config.js'
 import { UmbroStack } from './stacks/umbro-stack.js'
 import { VercelOpenIDConnectStack } from './stacks/vercel-open-id-connect.js'
-import { grantDynamoDBAccess } from './utils/integration.js'
+// import { grantDynamoDBAccess } from './utils/integration.js'
 
 const config = getConfig()
 const app = new App()
@@ -27,16 +27,7 @@ const umbroStack = new UmbroStack(app, 'UmbroStack', {
 	stage: config.stage,
 })
 
-// Ensure consumer (Vercel OIDC) updates before producer (UmbroStack) when references change
-umbroStack.addDependency(vercelOidcStack)
-
-// Grant Vercel OIDC role permissions to DynamoDB tables
-grantDynamoDBAccess({
-	role: vercelOidcStack.role,
-	tables: {
-		users: umbroStack.usersTable,
-		serviceTokens: umbroStack.serviceTokensTable,
-	},
-})
+// Note: Per-stack wildcard DynamoDB permissions are granted in Vercel OIDC stack.
+// Avoid cross-stack references from OIDC role to specific table ARNs to prevent export cycles.
 
 

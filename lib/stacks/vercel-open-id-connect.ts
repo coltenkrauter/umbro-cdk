@@ -7,11 +7,11 @@ import { OpenIdConnectProvider, Role, WebIdentityPrincipal } from 'aws-cdk-lib/a
 import { Stage } from '@krauters/structures'
 
 import {
-	grantAssumeAndPassRolePermissions,
-	grantCloudFormationWritePermissions,
-	grantDynamoDbWritePermissions,
-	grantS3WritePermissions,
-	grantSsmParameterStoreReadPermissions,
+    grantAssumeAndPassRolePermissions,
+    grantCloudFormationWritePermissions,
+    grantDynamoDbWritePermissions,
+    grantS3WritePermissions,
+    grantSsmParameterStoreReadPermissions,
 } from '../utils/permissions.js'
 
 export interface VercelOpenIDConnectStackProps extends StackProps {
@@ -92,7 +92,8 @@ export class VercelOpenIDConnectStack extends Stack {
 			roleName,
 		})
 
-		grantDynamoDbWritePermissions(this.role)
+        // Grant wildcard DynamoDB access to avoid cross-stack refs to table ARNs
+        grantDynamoDbWritePermissions(this.role)
 		grantSsmParameterStoreReadPermissions(this.role)
 
 		this.role.applyRemovalPolicy(RemovalPolicy.DESTROY)
