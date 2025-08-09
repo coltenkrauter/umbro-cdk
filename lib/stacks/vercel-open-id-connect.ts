@@ -92,8 +92,7 @@ export class VercelOpenIDConnectStack extends Stack {
 			roleName,
 		})
 
-        // Grant wildcard DynamoDB access to avoid cross-stack refs to table ARNs
-        grantDynamoDbWritePermissions(this.role)
+        		// Note: Specific table permissions are granted in app.ts after stack creation
 		grantSsmParameterStoreReadPermissions(this.role)
 
 		this.role.applyRemovalPolicy(RemovalPolicy.DESTROY)

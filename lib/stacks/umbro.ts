@@ -63,4 +63,8 @@ export class Umbro extends Stack {
 	get serviceTokensTable() {
 		return this.database.serviceTokensTable
 	}
+
+	get rateLimitTable() {
+		return this.database.rateLimitTable
+	}
 }

@@ -3,7 +3,7 @@ import { App } from 'aws-cdk-lib'
 import { getConfig } from './config.js'
 import { Umbro } from './stacks/umbro.js'
 import { VercelOpenIDConnectStack } from './stacks/vercel-open-id-connect.js'
-// import { grantDynamoDBAccess } from './utils/integration.js'
+import { grantDynamoDBAccess } from './utils/integration.js'
 
 const config = getConfig()
 const app = new App()
@@ -27,7 +27,14 @@ const umbro = new Umbro(app, 'Umbro', {
 	stage: config.stage,
 })
 
-// Note: Wildcard DynamoDB permissions are granted in Vercel OIDC stack.
-// Avoid cross-stack references from OIDC role to specific table ARNs to prevent export cycles.
+// Grant specific table permissions after both stacks are created (avoids cross-stack exports)
+grantDynamoDBAccess({
+	role: vercelOidcStack.role,
+	tables: {
+		users: umbro.usersTable,
+		serviceTokens: umbro.serviceTokensTable,
+		rateLimit: umbro.rateLimitTable,
+	},
+})
 
 
