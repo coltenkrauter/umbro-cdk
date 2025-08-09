@@ -93,7 +93,7 @@ class VercelEnvironmentUpdater {
 	 */
 	private async getCloudFormationOutputs(): Promise<CloudFormationOutputs> {
 		const stage = this.determineStageFromTargets()
-		const umbroStackName = `UmbroStack`
+		const umbroStackName = `Umbro`
 		const vercelStackName = `UmbroVercelOIDC`
 
 		console.log(`📋 Reading CloudFormation outputs for stage: ${stage}`)

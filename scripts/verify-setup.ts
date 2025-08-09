@@ -54,7 +54,7 @@ class SetupVerifier {
 	private async verifyCloudFormationStacks(): Promise<void> {
 		try {
 			const [umbroResponse, vercelResponse] = await Promise.all([
-				this.cloudformation.send(new DescribeStacksCommand({ StackName: 'UmbroStack' })),
+				this.cloudformation.send(new DescribeStacksCommand({ StackName: 'Umbro' })),
 				this.cloudformation.send(new DescribeStacksCommand({ StackName: 'UmbroVercelOIDC' }))
 			])
 
@@ -62,9 +62,9 @@ class SetupVerifier {
 			const vercelStack = vercelResponse.Stacks?.[0]
 
 			if (umbroStack) {
-				this.addResult('UmbroStack', 'pass', `Found stack with ${umbroStack.Outputs?.length || 0} outputs`)
+				this.addResult('Umbro', 'pass', `Found stack with ${umbroStack.Outputs?.length || 0} outputs`)
 			} else {
-				this.addResult('UmbroStack', 'fail', 'Stack not found')
+				this.addResult('Umbro', 'fail', 'Stack not found')
 			}
 
 			if (vercelStack) {
