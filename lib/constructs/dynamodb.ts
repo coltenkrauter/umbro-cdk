@@ -24,7 +24,8 @@ export interface DynamoDBConstructProps {
  */
 export class DynamoDBConstruct extends Construct {
 	public readonly usersTable: Table
-	public readonly serviceTokensTable: Table
+    public readonly sessionsTable: Table
+    public readonly serviceTokensTable: Table
     public readonly rateLimitTable: Table
 
 	constructor(scope: Construct, id: string, props: DynamoDBConstructProps) {
@@ -64,7 +65,21 @@ export class DynamoDBConstruct extends Construct {
 			}
 		})
 
-        // Sessions table removed: using JWT strategy in application
+        // Sessions table (retained temporarily to break cross-stack reference)
+        this.sessionsTable = new Table(this, 'SessionsTable', {
+            tableName: `umbro-sessions-${stageKey}`,
+            partitionKey: { name: 'sessionToken', type: AttributeType.STRING },
+            billingMode: BillingMode.PAY_PER_REQUEST,
+            removalPolicy,
+            ...(needsBackups && {
+                pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+            })
+        })
+
+        this.sessionsTable.addGlobalSecondaryIndex({
+            indexName: 'SessionsByUserIdIndex',
+            partitionKey: { name: 'userId', type: AttributeType.STRING }
+        })
 
         // Service tokens table (custom for Umbro)
 		// World-class design: userId#createdAt sort key for chronological ordering
