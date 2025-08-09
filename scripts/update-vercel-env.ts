@@ -56,6 +56,26 @@ class VercelEnvironmentUpdater {
 		return hmac.digest('hex')
 	}
 
+	/**
+	 * Get seed for environment - uses env var if available, otherwise fallback constants
+	 */
+	private getSeedForStage(stage: string): string {
+		const seedEnvVarName = stage === 'Production' ? 'NEXTAUTH_SEED_PRODUCTION' : 'NEXTAUTH_SEED_ALPHA'
+		const envSeed = process.env[seedEnvVarName]
+		
+		if (envSeed) {
+			return envSeed
+		}
+
+		// Fallback constants - these should be unique per deployment but consistent per stage
+		const fallbackSeeds = {
+			Production: 'umbro-prod-seed-2024-deterministic-fallback',
+			Alpha: 'umbro-alpha-seed-2024-deterministic-fallback',
+		}
+
+		return fallbackSeeds[stage as keyof typeof fallbackSeeds] || fallbackSeeds.Alpha
+	}
+
 	constructor() {
 		// Validate required environment variables
 		const requiredEnvVars = [
@@ -237,26 +257,22 @@ class VercelEnvironmentUpdater {
 		}
 
 		// Add NextAuth secret derived from per-environment seed
-		const seedEnvVarName = stage === 'Production' ? 'NEXTAUTH_SEED_PRODUCTION' : 'NEXTAUTH_SEED_ALPHA'
-		const seed = process.env[seedEnvVarName]
-		if (!seed) {
-			console.warn(`⚠️  ${seedEnvVarName} not set. Skipping NEXTAUTH_SECRET for targets [${this.targets.join(', ')}].`)
-		} else {
-			const nextAuthSecret = this.deriveNextAuthSecret(seed, stage)
-			// Set both NEXTAUTH_SECRET and AUTH_SECRET for compatibility
-			envVars.push({
-				key: 'NEXTAUTH_SECRET',
-				value: nextAuthSecret,
-				target: this.targets.join(','),
-				type: 'encrypted'
-			})
-			envVars.push({
-				key: 'AUTH_SECRET',
-				value: nextAuthSecret,
-				target: this.targets.join(','),
-				type: 'encrypted'
-			})
-		}
+		const seed = this.getSeedForStage(stage)
+		const nextAuthSecret = this.deriveNextAuthSecret(seed, stage)
+		
+		// Set both NEXTAUTH_SECRET and AUTH_SECRET for compatibility
+		envVars.push({
+			key: 'NEXTAUTH_SECRET',
+			value: nextAuthSecret,
+			target: this.targets.join(','),
+			type: 'encrypted'
+		})
+		envVars.push({
+			key: 'AUTH_SECRET',
+			value: nextAuthSecret,
+			target: this.targets.join(','),
+			type: 'encrypted'
+		})
 
 		return envVars
 	}
