@@ -24,7 +24,6 @@ export interface DynamoDBConstructProps {
  */
 export class DynamoDBConstruct extends Construct {
 	public readonly usersTable: Table
-    public readonly sessionsTable: Table
     public readonly serviceTokensTable: Table
     public readonly rateLimitTable: Table
 
@@ -41,12 +40,16 @@ export class DynamoDBConstruct extends Construct {
 
 		// Users table (Auth.js users table)
 		// Note: Auth.js schema is constrained, but we can add audit fields as additional attributes
-		this.usersTable = new Table(this, 'UsersTable', {
+        this.usersTable = new Table(this, 'UsersTable', {
 			tableName: `umbro-users-${stageKey}`,
 			partitionKey: {
 				name: 'id',
 				type: AttributeType.STRING
 			},
+            sortKey: {
+                name: 'createdAt',
+                type: AttributeType.STRING,
+            },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy,
 			...(needsBackups && {
@@ -65,21 +68,7 @@ export class DynamoDBConstruct extends Construct {
 			}
 		})
 
-        // Sessions table (retained temporarily to break cross-stack reference)
-        this.sessionsTable = new Table(this, 'SessionsTable', {
-            tableName: `umbro-sessions-${stageKey}`,
-            partitionKey: { name: 'sessionToken', type: AttributeType.STRING },
-            billingMode: BillingMode.PAY_PER_REQUEST,
-            removalPolicy,
-            ...(needsBackups && {
-                pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
-            })
-        })
-
-        this.sessionsTable.addGlobalSecondaryIndex({
-            indexName: 'SessionsByUserIdIndex',
-            partitionKey: { name: 'userId', type: AttributeType.STRING }
-        })
+        // Sessions table removed (JWT sessions in app)
 
         // Service tokens table (custom for Umbro)
 		// World-class design: userId#createdAt sort key for chronological ordering
@@ -129,6 +118,7 @@ export class DynamoDBConstruct extends Construct {
         this.rateLimitTable = new Table(this, 'RateLimitTable', {
             tableName: `umbro-rate-limit-${stageKey}`,
             partitionKey: { name: 'id', type: AttributeType.STRING },
+            sortKey: { name: 'createdAt', type: AttributeType.STRING },
             billingMode: BillingMode.PAY_PER_REQUEST,
             removalPolicy,
             timeToLiveAttribute: 'expiresAt',
