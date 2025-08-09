@@ -35,7 +35,7 @@ interface CloudFormationOutputs {
 	Region?: string
 	VercelRoleArn?: string
 	UsersTableName?: string
-    SessionsTableName?: string
+    	RateLimitTableName?: string
 	ServiceTokensTableName?: string
 }
 
@@ -132,6 +132,9 @@ class VercelEnvironmentUpdater {
 						case 'ServiceTokensTableName':
 							outputs.ServiceTokensTableName = output.OutputValue
 							break
+						case 'RateLimitTableName':
+							outputs.RateLimitTableName = output.OutputValue
+							break
 					}
 				}
 			})
@@ -147,9 +150,9 @@ class VercelEnvironmentUpdater {
 			console.log(`   Account ID: ${outputs.AccountId}`)
 			console.log(`   Region: ${outputs.Region}`)
 			console.log(`   Role ARN: ${outputs.VercelRoleArn}`)
-			console.log(`   Users Table: ${outputs.UsersTableName}`)
-            // Sessions table removed
+						console.log(`   Users Table: ${outputs.UsersTableName}`)
 			console.log(`   Service Tokens Table: ${outputs.ServiceTokensTableName}`)
+			console.log(`   Rate Limit Table: ${outputs.RateLimitTableName}`)
 
 			return outputs
 		} catch (error) {
@@ -177,14 +180,14 @@ class VercelEnvironmentUpdater {
 		// Determine stage from targets (Alpha or Production)
 		const stage = this.determineStageFromTargets()
 
-		// Add AWS configuration
+				// Add AWS configuration
 		if (outputs.AccountId) {
-					envVars.push({
-			key: 'AWS_ACCOUNT_ID',
-			value: outputs.AccountId,
-			target: this.targets.join(','),
-			type: 'plain'
-		})
+			envVars.push({
+				key: 'AWS_ACCOUNT_ID',
+				value: outputs.AccountId,
+				target: this.targets.join(','),
+				type: 'plain'
+			})
 		}
 
 		if (outputs.Region) {
@@ -205,22 +208,29 @@ class VercelEnvironmentUpdater {
 			})
 		}
 
-		// Add DynamoDB table names
+		// Add DynamoDB table names with consistent naming
 		if (outputs.UsersTableName) {
 			envVars.push({
-				key: 'USERS_TABLE_NAME',
+				key: 'TABLE_NAME_USERS',
 				value: outputs.UsersTableName,
 				target: this.targets.join(','),
 				type: 'plain'
 			})
 		}
 
-        // Sessions table removed
-
 		if (outputs.ServiceTokensTableName) {
 			envVars.push({
-				key: 'SERVICE_TOKENS_TABLE_NAME',
+				key: 'TABLE_NAME_SERVICE_TOKENS',
 				value: outputs.ServiceTokensTableName,
+				target: this.targets.join(','),
+				type: 'plain'
+			})
+		}
+
+		if (outputs.RateLimitTableName) {
+			envVars.push({
+				key: 'TABLE_NAME_RATE_LIMIT',
+				value: outputs.RateLimitTableName,
 				target: this.targets.join(','),
 				type: 'plain'
 			})
