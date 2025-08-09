@@ -74,7 +74,7 @@ class SetupVerifier {
 			}
 
 			// Check specific outputs
-			const expectedOutputs = ['AccountId', 'Region', 'UsersTableName', 'SessionsTableName', 'ServiceTokensTableName']
+            const expectedOutputs = ['AccountId', 'Region', 'UsersTableName', 'ServiceTokensTableName']
 			const actualOutputs = umbroStack?.Outputs?.map(o => o.OutputKey) || []
 
 			for (const expectedOutput of expectedOutputs) {
@@ -117,12 +117,11 @@ class SetupVerifier {
 				teamId: this.teamId
 			})
 
-			const expectedEnvVars = [
+            const expectedEnvVars = [
 				'AWS_ACCOUNT_ID',
 				'AWS_REGION', 
 				'AWS_ROLE_ARN',
 				'USERS_TABLE_NAME',
-				'SESSIONS_TABLE_NAME',
 				'SERVICE_TOKENS_TABLE_NAME'
 			]
 

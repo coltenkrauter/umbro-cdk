@@ -32,7 +32,6 @@ grantDynamoDBAccess({
 	role: vercelOidcStack.role,
 	tables: {
 		users: umbroStack.usersTable,
-		sessions: umbroStack.sessionsTable,
 		serviceTokens: umbroStack.serviceTokensTable,
 	},
 })

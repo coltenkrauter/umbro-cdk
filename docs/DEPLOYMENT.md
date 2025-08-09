@@ -20,7 +20,7 @@ The umbro-cdk package deploys AWS backend infrastructure:
 - **UmbroPasswordPolicy** - Account password requirements  
 - **UmbroSecurityMonitoring** - CloudTrail and security alerts
 - **UmbroUsers** - IAM users, groups, and roles
-- **UmbroStack** - DynamoDB tables (users, sessions, service-tokens)
+- **UmbroStack** - DynamoDB tables (users, service-tokens)
 
 ## What You Need to Deploy
 

@@ -32,7 +32,7 @@ Since Venice handles account provisioning and GitHub OIDC, you only need to depl
 - **UmbroPasswordPolicy** - Account password requirements
 - **UmbroSecurityMonitoring** - CloudTrail and security alerts
 - **UmbroUsers** - IAM users, groups, and roles
-- **UmbroStack** - DynamoDB tables (users, sessions, service-tokens)
+- **UmbroStack** - DynamoDB tables (users, service-tokens)
 
 ## Post-Deployment Setup
 

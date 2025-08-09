@@ -42,26 +42,22 @@ export class UmbroStack extends Stack {
 			exportName: `UmbroStack-${stage}-UsersTableName`
 		})
 
-		new CfnOutput(this, 'SessionsTableName', {
-			value: this.database.sessionsTable.tableName,
-			description: 'DynamoDB Sessions Table Name',
-			exportName: `UmbroStack-${stage}-SessionsTableName`
-		})
-
 		new CfnOutput(this, 'ServiceTokensTableName', {
 			value: this.database.serviceTokensTable.tableName,
 			description: 'DynamoDB Service Tokens Table Name',
 			exportName: `UmbroStack-${stage}-ServiceTokensTableName`
 		})
+
+        new CfnOutput(this, 'RateLimitTableName', {
+            value: this.database.rateLimitTable.tableName,
+            description: 'DynamoDB Rate Limit Table Name',
+            exportName: `UmbroStack-${stage}-RateLimitTableName`
+        })
 	}
 
 	// Convenience getters for backward compatibility
 	get usersTable() {
 		return this.database.usersTable
-	}
-
-	get sessionsTable() {
-		return this.database.sessionsTable
 	}
 
 	get serviceTokensTable() {

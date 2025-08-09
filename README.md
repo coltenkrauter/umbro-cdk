@@ -66,7 +66,7 @@ Since Venice handles account provisioning and GitHub OIDC, you only need to depl
 - **UmbroPasswordPolicy** - Account password requirements
 - **UmbroSecurityMonitoring** - CloudTrail and security alerts
 - **UmbroUsers** - IAM users, groups, and roles
-- **UmbroStack** - DynamoDB tables (users, sessions, service-tokens)
+- **UmbroStack** - DynamoDB tables (users, service-tokens)
 
 ## Available Scripts
 
@@ -85,7 +85,6 @@ Since Venice handles account provisioning and GitHub OIDC, you only need to depl
 
 ### DynamoDB Tables
 - **umbro-users** - User accounts with email GSI for authentication
-- **umbro-sessions** - User sessions with session token and user ID GSIs  
 - **umbro-service-tokens** - API service tokens with composite key (user_id, token_name)
 
 All tables use pay-per-request billing and have point-in-time recovery enabled.

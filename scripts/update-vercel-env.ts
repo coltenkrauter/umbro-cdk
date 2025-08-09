@@ -15,11 +15,11 @@
  * - AWS_REGION: AWS Region
  * - AWS_ROLE_ARN: AWS Role ARN for Vercel OIDC
  * - USERS_TABLE_NAME: DynamoDB Users table name
- * - SESSIONS_TABLE_NAME: DynamoDB Sessions table name
  * - SERVICE_TOKENS_TABLE_NAME: DynamoDB Service Tokens table name
  */
 
 import { CloudFormationClient, DescribeStacksCommand } from '@aws-sdk/client-cloudformation'
+import { createHmac } from 'crypto'
 import { Vercel } from '@vercel/sdk'
 import { OneTarget } from '@vercel/sdk/models/createprojectenvop.js'
 
@@ -35,7 +35,7 @@ interface CloudFormationOutputs {
 	Region?: string
 	VercelRoleArn?: string
 	UsersTableName?: string
-	SessionsTableName?: string
+    SessionsTableName?: string
 	ServiceTokensTableName?: string
 }
 
@@ -45,6 +45,16 @@ class VercelEnvironmentUpdater {
 	private projectId: string
 	private teamId: string
 	private targets: string[]
+
+	/**
+	 * Derive a deterministic secret for NextAuth from a per-environment seed.
+	 * The output is a 64-character hex string derived via HMAC-SHA256.
+	 */
+	private deriveNextAuthSecret(seed: string, stage: string): string {
+		const hmac = createHmac('sha256', seed)
+		hmac.update(`umbro|nextauth|${stage}`)
+		return hmac.digest('hex')
+	}
 
 	constructor() {
 		// Validate required environment variables
@@ -118,9 +128,7 @@ class VercelEnvironmentUpdater {
 						case 'UsersTableName':
 							outputs.UsersTableName = output.OutputValue
 							break
-						case 'SessionsTableName':
-							outputs.SessionsTableName = output.OutputValue
-							break
+                    // Sessions table removed: JWT sessions in app
 						case 'ServiceTokensTableName':
 							outputs.ServiceTokensTableName = output.OutputValue
 							break
@@ -140,7 +148,7 @@ class VercelEnvironmentUpdater {
 			console.log(`   Region: ${outputs.Region}`)
 			console.log(`   Role ARN: ${outputs.VercelRoleArn}`)
 			console.log(`   Users Table: ${outputs.UsersTableName}`)
-			console.log(`   Sessions Table: ${outputs.SessionsTableName}`)
+            // Sessions table removed
 			console.log(`   Service Tokens Table: ${outputs.ServiceTokensTableName}`)
 
 			return outputs
@@ -165,6 +173,9 @@ class VercelEnvironmentUpdater {
 	 */
 	private createEnvironmentVariables(outputs: CloudFormationOutputs): EnvironmentVariable[] {
 		const envVars: EnvironmentVariable[] = []
+
+		// Determine stage from targets (Alpha or Production)
+		const stage = this.determineStageFromTargets()
 
 		// Add AWS configuration
 		if (outputs.AccountId) {
@@ -204,14 +215,7 @@ class VercelEnvironmentUpdater {
 			})
 		}
 
-		if (outputs.SessionsTableName) {
-			envVars.push({
-				key: 'SESSIONS_TABLE_NAME',
-				value: outputs.SessionsTableName,
-				target: this.targets.join(','),
-				type: 'plain'
-			})
-		}
+        // Sessions table removed
 
 		if (outputs.ServiceTokensTableName) {
 			envVars.push({
@@ -219,6 +223,28 @@ class VercelEnvironmentUpdater {
 				value: outputs.ServiceTokensTableName,
 				target: this.targets.join(','),
 				type: 'plain'
+			})
+		}
+
+		// Add NextAuth secret derived from per-environment seed
+		const seedEnvVarName = stage === 'Production' ? 'NEXTAUTH_SEED_PRODUCTION' : 'NEXTAUTH_SEED_ALPHA'
+		const seed = process.env[seedEnvVarName]
+		if (!seed) {
+			console.warn(`⚠️  ${seedEnvVarName} not set. Skipping NEXTAUTH_SECRET for targets [${this.targets.join(', ')}].`)
+		} else {
+			const nextAuthSecret = this.deriveNextAuthSecret(seed, stage)
+			// Set both NEXTAUTH_SECRET and AUTH_SECRET for compatibility
+			envVars.push({
+				key: 'NEXTAUTH_SECRET',
+				value: nextAuthSecret,
+				target: this.targets.join(','),
+				type: 'encrypted'
+			})
+			envVars.push({
+				key: 'AUTH_SECRET',
+				value: nextAuthSecret,
+				target: this.targets.join(','),
+				type: 'encrypted'
 			})
 		}
 

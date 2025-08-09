@@ -24,8 +24,8 @@ export interface DynamoDBConstructProps {
  */
 export class DynamoDBConstruct extends Construct {
 	public readonly usersTable: Table
-	public readonly sessionsTable: Table
 	public readonly serviceTokensTable: Table
+    public readonly rateLimitTable: Table
 
 	constructor(scope: Construct, id: string, props: DynamoDBConstructProps) {
 		super(scope, id)
@@ -64,33 +64,9 @@ export class DynamoDBConstruct extends Construct {
 			}
 		})
 
-		// Sessions table (Auth.js sessions table)  
-		// Note: Auth.js requires sessionToken as PK, but we can add audit fields as attributes
-		this.sessionsTable = new Table(this, 'SessionsTable', {
-			tableName: `umbro-sessions-${stageKey}`,
-			partitionKey: {
-				name: 'sessionToken',
-				type: AttributeType.STRING
-			},
-			billingMode: BillingMode.PAY_PER_REQUEST,
-			removalPolicy,
-			...(needsBackups && {
-				pointInTimeRecoverySpecification: {
-					pointInTimeRecoveryEnabled: true
-				}
-			})
-		})
+        // Sessions table removed: using JWT strategy in application
 
-		// GSI for user sessions lookup
-		this.sessionsTable.addGlobalSecondaryIndex({
-			indexName: 'SessionsByUserIdIndex',
-			partitionKey: {
-				name: 'userId',
-				type: AttributeType.STRING
-			}
-		})
-
-		// Service tokens table (custom for Umbro)
+        // Service tokens table (custom for Umbro)
 		// World-class design: userId#createdAt sort key for chronological ordering
 		this.serviceTokensTable = new Table(this, 'ServiceTokensTable', {
 			tableName: `umbro-service-tokens-${stageKey}`,
@@ -128,10 +104,19 @@ export class DynamoDBConstruct extends Construct {
 		})
 
 		// GSI for querying active/inactive tokens with expiration filtering
-		this.serviceTokensTable.addGlobalSecondaryIndex({
+        this.serviceTokensTable.addGlobalSecondaryIndex({
 			indexName: 'ServiceTokensByStatusAndExpirationIndex',
 			partitionKey: { name: 'removed', type: AttributeType.STRING },
 			sortKey: { name: 'expiresAt', type: AttributeType.STRING }
 		})
+
+        // Rate limit table (basic fixed window). TTL enabled on 'expiresAt'.
+        this.rateLimitTable = new Table(this, 'RateLimitTable', {
+            tableName: `umbro-rate-limit-${stageKey}`,
+            partitionKey: { name: 'id', type: AttributeType.STRING },
+            billingMode: BillingMode.PAY_PER_REQUEST,
+            removalPolicy,
+            timeToLiveAttribute: 'expiresAt',
+        })
 	}
 }

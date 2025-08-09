@@ -50,6 +50,9 @@ Configure these secrets in your repository settings:
 VERCEL_TOKEN=your_vercel_api_token
 VERCEL_PROJECT_ID=your_project_id
 VERCEL_TEAM_ID=your_team_id
+# Seeds used to derive NEXTAUTH_SECRET per environment
+NEXTAUTH_SEED_ALPHA=32+_character_random_seed_for_alpha
+NEXTAUTH_SEED_PRODUCTION=32+_character_random_seed_for_production
 ```
 
 ### GitHub Variables
@@ -181,6 +184,26 @@ if (outputs.NewTableName) {
     type: 'plain'
   })
 }
+```
+
+## NextAuth secret management
+
+- The sync script derives `NEXTAUTH_SECRET` (and sets `AUTH_SECRET` for compatibility) from per-environment seeds using HMAC-SHA256
+- Inputs: `NEXTAUTH_SEED_ALPHA` for `preview,development` targets and `NEXTAUTH_SEED_PRODUCTION` for `production`
+- Derivation: `hex(hmac_sha256(seed, 'umbro|nextauth|<Stage>'))`
+- Keep seeds safe in GitHub Secrets; do not log or commit them
+- Rotating a seed invalidates existing sessions
+
+### Manual run example
+
+```bash
+export VERCEL_TOKEN="..."
+export VERCEL_PROJECT_ID="..."
+export VERCEL_TEAM_ID="..."
+export TARGETS="preview,development"
+export NEXTAUTH_SEED_ALPHA="your_alpha_seed"
+
+npm run update-vercel-env
 ```
 
 ## Multi-Environment Support

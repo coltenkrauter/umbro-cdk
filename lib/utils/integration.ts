@@ -9,7 +9,6 @@ export interface GrantDynamoDBAccessOptions {
 	role: Role
 	tables: {
 		users: Table
-		sessions: Table
 		serviceTokens: Table
 	}
 	permissions?: 'read' | 'write' | 'readwrite'
@@ -27,8 +26,7 @@ export function grantDynamoDBAccess(options: GrantDynamoDBAccessOptions): void {
 		? 'grantWriteData'
 		: 'grantReadWriteData'
 
-	tables.users[grantMethod](role)
-	tables.sessions[grantMethod](role)
-	tables.serviceTokens[grantMethod](role)
+    tables.users[grantMethod](role)
+    tables.serviceTokens[grantMethod](role)
 }
 
