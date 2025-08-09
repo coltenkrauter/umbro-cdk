@@ -18,7 +18,7 @@ export interface DynamoDBConstructProps {
  * - createdBy: string (user ID or system identifier)
  * - modifiedBy: string (user ID or system identifier)
  * - version: number (optimistic locking counter)
- * - removed: string ('true' | 'false' for soft deletes)
+ * - removed: boolean (soft delete flag; not indexed)
  * - expiresAt?: string (ISO 8601 timestamp for TTL)
  * - metadata?: Record<string, any> (extensible metadata)
  */
@@ -88,6 +88,7 @@ export class DynamoDBConstruct extends Construct {
 			},
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy,
+			timeToLiveAttribute: 'expiresAt',
 			...(needsBackups && {
 				pointInTimeRecoverySpecification: {
 					pointInTimeRecoveryEnabled: true
@@ -113,13 +114,6 @@ export class DynamoDBConstruct extends Construct {
 			indexName: 'ServiceTokensByUserAndNameIndex',
 			partitionKey: { name: 'userId', type: AttributeType.STRING },
 			sortKey: { name: 'tokenName', type: AttributeType.STRING }
-		})
-
-		// GSI for querying active/inactive tokens with expiration filtering
-        this.serviceTokensTable.addGlobalSecondaryIndex({
-			indexName: 'ServiceTokensByStatusAndExpirationIndex',
-			partitionKey: { name: 'removed', type: AttributeType.STRING },
-			sortKey: { name: 'expiresAt', type: AttributeType.STRING }
 		})
 
         // Rate limit table (basic fixed window). TTL enabled on 'expiresAt'.
