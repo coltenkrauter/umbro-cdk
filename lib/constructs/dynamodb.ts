@@ -46,10 +46,6 @@ export class DynamoDBConstruct extends Construct {
 				name: 'id',
 				type: AttributeType.STRING
 			},
-            sortKey: {
-                name: 'createdAt',
-                type: AttributeType.STRING,
-            },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy,
 			...(needsBackups && {
@@ -118,7 +114,6 @@ export class DynamoDBConstruct extends Construct {
         this.rateLimitTable = new Table(this, 'RateLimitTable', {
             tableName: `umbro-rate-limit-${stageKey}`,
             partitionKey: { name: 'id', type: AttributeType.STRING },
-            sortKey: { name: 'createdAt', type: AttributeType.STRING },
             billingMode: BillingMode.PAY_PER_REQUEST,
             removalPolicy,
             timeToLiveAttribute: 'expiresAt',
