@@ -13,7 +13,7 @@ The Umbro infrastructure leverages the [Venice](https://github.com/coltenkrauter
 This allows the umbro-cdk package to focus on application-specific infrastructure:
 
 ### Application Infrastructure (AWS)
-- **DynamoDB Tables** - User data and service tokens
+- **DynamoDB Tables** - User data and service tokens (sessions table deprecated)
 - **Vercel OIDC Provider** - Multi-environment deployments from Vercel
 - **Application Security** - Password policies and monitoring specific to the application
 - **Pay-per-request billing** - Cost-effective scaling

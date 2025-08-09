@@ -27,6 +27,9 @@ const umbroStack = new UmbroStack(app, 'UmbroStack', {
 	stage: config.stage,
 })
 
+// Ensure consumer (Vercel OIDC) updates before producer (UmbroStack) when references change
+umbroStack.addDependency(vercelOidcStack)
+
 // Grant Vercel OIDC role permissions to DynamoDB tables
 grantDynamoDBAccess({
 	role: vercelOidcStack.role,

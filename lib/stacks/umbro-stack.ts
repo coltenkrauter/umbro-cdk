@@ -63,4 +63,9 @@ export class UmbroStack extends Stack {
 	get serviceTokensTable() {
 		return this.database.serviceTokensTable
 	}
+
+	// Deprecated: kept temporarily to avoid breaking cross-stack refs; remove after rollout
+	get sessionsTable() {
+		return this.database.sessionsTable
+	}
 }
