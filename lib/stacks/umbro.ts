@@ -4,17 +4,17 @@ import { Stage } from '@krauters/structures'
 
 import { DynamoDBConstruct } from '../constructs/dynamodb.js'
 
-export interface UmbroStackProps extends StackProps {
+export interface UmbroProps extends StackProps {
 	stage: Stage
 }
 
 /**
  * Main stack for Umbro DynamoDB infrastructure.
  */
-export class UmbroStack extends Stack {
+export class Umbro extends Stack {
 	public readonly database: DynamoDBConstruct
 
-	constructor(scope: Construct, id: string, props: UmbroStackProps) {
+	constructor(scope: Construct, id: string, props: UmbroProps) {
 		super(scope, id, props)
 
 		const { stage } = props

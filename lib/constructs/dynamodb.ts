@@ -38,12 +38,16 @@ export class DynamoDBConstruct extends Construct {
 		const needsBackups = stage === Stage.Beta || stage === Stage.Production
 		const removalPolicy = isProduction ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY
 
-		// Users table (Auth.js users table)
+				// Users table (Auth.js users table)
 		// Note: Auth.js schema is constrained, but we can add audit fields as additional attributes
-        this.usersTable = new Table(this, 'UsersTable', {
+		this.usersTable = new Table(this, 'UsersTable', {
 			tableName: `umbro-users-${stageKey}`,
 			partitionKey: {
 				name: 'id',
+				type: AttributeType.STRING
+			},
+			sortKey: {
+				name: 'createdAt',
 				type: AttributeType.STRING
 			},
 			billingMode: BillingMode.PAY_PER_REQUEST,
@@ -60,6 +64,10 @@ export class DynamoDBConstruct extends Construct {
 			indexName: 'UsersByEmailIndex',
 			partitionKey: {
 				name: 'email',
+				type: AttributeType.STRING
+			},
+			sortKey: {
+				name: 'createdAt',
 				type: AttributeType.STRING
 			}
 		})
@@ -93,6 +101,10 @@ export class DynamoDBConstruct extends Construct {
 			partitionKey: {
 				name: 'id',
 				type: AttributeType.STRING
+			},
+			sortKey: {
+				name: 'createdAt',
+				type: AttributeType.STRING
 			}
 		})
 
@@ -114,6 +126,7 @@ export class DynamoDBConstruct extends Construct {
         this.rateLimitTable = new Table(this, 'RateLimitTable', {
             tableName: `umbro-rate-limit-${stageKey}`,
             partitionKey: { name: 'id', type: AttributeType.STRING },
+            sortKey: { name: 'createdAt', type: AttributeType.STRING },
             billingMode: BillingMode.PAY_PER_REQUEST,
             removalPolicy,
             timeToLiveAttribute: 'expiresAt',
