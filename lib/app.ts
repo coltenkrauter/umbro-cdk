@@ -29,12 +29,20 @@ const umbro = new Umbro(app, 'Umbro', {
 
 // Grant specific table permissions after both stacks are created (avoids cross-stack exports)
 grantDynamoDBAccess({
-	role: vercelOidcStack.role,
-	tables: {
-		users: umbro.usersTable,
-		serviceTokens: umbro.serviceTokensTable,
-		rateLimit: umbro.rateLimitTable,
-	},
+    role: vercelOidcStack.role,
+    tables: [
+        umbro.database.usersTable,
+        umbro.database.serviceTokensTable,
+        umbro.database.rateLimitTable,
+        umbro.database.teamsTable,
+        umbro.database.teamMembershipsTable,
+        umbro.database.applicationsTable,
+        umbro.database.environmentsTable,
+        umbro.database.requestsTable,
+        umbro.database.requestCommentsTable,
+        umbro.database.accessGrantsTable,
+        umbro.database.visitorsTable,
+    ],
 })
 
 
