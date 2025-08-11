@@ -53,6 +53,55 @@ export class Umbro extends Stack {
             description: 'DynamoDB Rate Limit Table Name',
             exportName: `UmbroStack-${stage}-RateLimitTableName`
         })
+
+		// Additional application tables
+		new CfnOutput(this, 'ApplicationsTableName', {
+			value: this.database.applicationsTable.tableName,
+			description: 'DynamoDB Applications Table Name',
+			exportName: `UmbroStack-${stage}-ApplicationsTableName`
+		})
+
+		new CfnOutput(this, 'EnvironmentsTableName', {
+			value: this.database.environmentsTable.tableName,
+			description: 'DynamoDB Environments Table Name',
+			exportName: `UmbroStack-${stage}-EnvironmentsTableName`
+		})
+
+		new CfnOutput(this, 'TeamsTableName', {
+			value: this.database.teamsTable.tableName,
+			description: 'DynamoDB Teams Table Name',
+			exportName: `UmbroStack-${stage}-TeamsTableName`
+		})
+
+		new CfnOutput(this, 'TeamMembershipsTableName', {
+			value: this.database.teamMembershipsTable.tableName,
+			description: 'DynamoDB Team Memberships Table Name',
+			exportName: `UmbroStack-${stage}-TeamMembershipsTableName`
+		})
+
+		new CfnOutput(this, 'RequestsTableName', {
+			value: this.database.requestsTable.tableName,
+			description: 'DynamoDB Requests Table Name',
+			exportName: `UmbroStack-${stage}-RequestsTableName`
+		})
+
+		new CfnOutput(this, 'RequestCommentsTableName', {
+			value: this.database.requestCommentsTable.tableName,
+			description: 'DynamoDB Request Comments Table Name',
+			exportName: `UmbroStack-${stage}-RequestCommentsTableName`
+		})
+
+		new CfnOutput(this, 'AccessGrantsTableName', {
+			value: this.database.accessGrantsTable.tableName,
+			description: 'DynamoDB Access Grants Table Name',
+			exportName: `UmbroStack-${stage}-AccessGrantsTableName`
+		})
+
+		new CfnOutput(this, 'VisitorsTableName', {
+			value: this.database.visitorsTable.tableName,
+			description: 'DynamoDB Visitors Table Name',
+			exportName: `UmbroStack-${stage}-VisitorsTableName`
+		})
 	}
 
 	// Convenience getters for backward compatibility

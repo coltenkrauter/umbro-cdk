@@ -37,6 +37,14 @@ interface CloudFormationOutputs {
 	UsersTableName?: string
     	RateLimitTableName?: string
 	ServiceTokensTableName?: string
+    ApplicationsTableName?: string
+    EnvironmentsTableName?: string
+    TeamsTableName?: string
+    TeamMembershipsTableName?: string
+    RequestsTableName?: string
+    RequestCommentsTableName?: string
+    AccessGrantsTableName?: string
+    VisitorsTableName?: string
 }
 
 class VercelEnvironmentUpdater {
@@ -155,6 +163,30 @@ class VercelEnvironmentUpdater {
 						case 'RateLimitTableName':
 							outputs.RateLimitTableName = output.OutputValue
 							break
+                        case 'ApplicationsTableName':
+                            outputs.ApplicationsTableName = output.OutputValue
+                            break
+                        case 'EnvironmentsTableName':
+                            outputs.EnvironmentsTableName = output.OutputValue
+                            break
+                        case 'TeamsTableName':
+                            outputs.TeamsTableName = output.OutputValue
+                            break
+                        case 'TeamMembershipsTableName':
+                            outputs.TeamMembershipsTableName = output.OutputValue
+                            break
+                        case 'RequestsTableName':
+                            outputs.RequestsTableName = output.OutputValue
+                            break
+                        case 'RequestCommentsTableName':
+                            outputs.RequestCommentsTableName = output.OutputValue
+                            break
+                        case 'AccessGrantsTableName':
+                            outputs.AccessGrantsTableName = output.OutputValue
+                            break
+                        case 'VisitorsTableName':
+                            outputs.VisitorsTableName = output.OutputValue
+                            break
 					}
 				}
 			})
@@ -255,6 +287,78 @@ class VercelEnvironmentUpdater {
 				type: 'plain'
 			})
 		}
+
+        if (outputs.ApplicationsTableName) {
+            envVars.push({
+                key: 'TABLE_NAME_APPLICATIONS',
+                value: outputs.ApplicationsTableName,
+                target: this.targets.join(','),
+                type: 'plain'
+            })
+        }
+
+        if (outputs.EnvironmentsTableName) {
+            envVars.push({
+                key: 'TABLE_NAME_ENVIRONMENTS',
+                value: outputs.EnvironmentsTableName,
+                target: this.targets.join(','),
+                type: 'plain'
+            })
+        }
+
+        if (outputs.TeamsTableName) {
+            envVars.push({
+                key: 'TABLE_NAME_TEAMS',
+                value: outputs.TeamsTableName,
+                target: this.targets.join(','),
+                type: 'plain'
+            })
+        }
+
+        if (outputs.TeamMembershipsTableName) {
+            envVars.push({
+                key: 'TABLE_NAME_TEAM_MEMBERSHIPS',
+                value: outputs.TeamMembershipsTableName,
+                target: this.targets.join(','),
+                type: 'plain'
+            })
+        }
+
+        if (outputs.RequestsTableName) {
+            envVars.push({
+                key: 'TABLE_NAME_REQUESTS',
+                value: outputs.RequestsTableName,
+                target: this.targets.join(','),
+                type: 'plain'
+            })
+        }
+
+        if (outputs.RequestCommentsTableName) {
+            envVars.push({
+                key: 'TABLE_NAME_REQUEST_COMMENTS',
+                value: outputs.RequestCommentsTableName,
+                target: this.targets.join(','),
+                type: 'plain'
+            })
+        }
+
+        if (outputs.AccessGrantsTableName) {
+            envVars.push({
+                key: 'TABLE_NAME_ACCESS_GRANTS',
+                value: outputs.AccessGrantsTableName,
+                target: this.targets.join(','),
+                type: 'plain'
+            })
+        }
+
+        if (outputs.VisitorsTableName) {
+            envVars.push({
+                key: 'TABLE_NAME_VISITORS',
+                value: outputs.VisitorsTableName,
+                target: this.targets.join(','),
+                type: 'plain'
+            })
+        }
 
 		// Add NextAuth secret derived from per-environment seed
 		const seed = this.getSeedForStage(stage)

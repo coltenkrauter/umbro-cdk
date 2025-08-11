@@ -33,9 +33,17 @@ The following outputs are automatically synced:
 ### UmbroStack Outputs
 - `AccountId` → `AWS_ACCOUNT_ID`
 - `Region` → `AWS_REGION`
-- `UsersTableName` → `USERS_TABLE_NAME`
-- `SessionsTableName` → `SESSIONS_TABLE_NAME`
-- `ServiceTokensTableName` → `SERVICE_TOKENS_TABLE_NAME`
+- `UsersTableName` → `TABLE_NAME_USERS`
+- `ServiceTokensTableName` → `TABLE_NAME_SERVICE_TOKENS`
+- `RateLimitTableName` → `TABLE_NAME_RATE_LIMIT`
+- `ApplicationsTableName` → `TABLE_NAME_APPLICATIONS`
+- `EnvironmentsTableName` → `TABLE_NAME_ENVIRONMENTS`
+- `TeamsTableName` → `TABLE_NAME_TEAMS`
+- `TeamMembershipsTableName` → `TABLE_NAME_TEAM_MEMBERSHIPS`
+- `RequestsTableName` → `TABLE_NAME_REQUESTS`
+- `RequestCommentsTableName` → `TABLE_NAME_REQUEST_COMMENTS`
+- `AccessGrantsTableName` → `TABLE_NAME_ACCESS_GRANTS`
+- `VisitorsTableName` → `TABLE_NAME_VISITORS`
 
 ### UmbroVercelOIDC Outputs
 - `VercelRoleArn` → `AWS_ROLE_ARN`
