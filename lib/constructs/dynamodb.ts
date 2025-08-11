@@ -120,6 +120,13 @@ export class DynamoDBConstruct extends Construct {
 			})
 		})
 
+		// GSI to query applications by owner (user or team)
+		this.applicationsTable.addGlobalSecondaryIndex({
+			indexName: 'ApplicationsByOwnerIndex',
+			partitionKey: { name: 'ownerId', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING }
+		})
+
 		// Environments table
 		this.environmentsTable = new Table(this, 'EnvironmentsTable', {
 			tableName: process.env.TABLE_NAME_ENVIRONMENTS ?? `umbro-environments-${stageKey}`,
