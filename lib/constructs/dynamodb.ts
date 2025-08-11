@@ -28,6 +28,7 @@ export class DynamoDBConstruct extends Construct {
     public readonly applicationsTable!: Table
     public readonly environmentsTable!: Table
     public readonly requestsTable!: Table
+    public readonly requestCommentsTable!: Table
     public readonly serviceTokensTable: Table
     public readonly teamsTable!: Table
     public readonly teamMembershipsTable!: Table
@@ -204,6 +205,23 @@ export class DynamoDBConstruct extends Construct {
 		this.requestsTable.addGlobalSecondaryIndex({
 			indexName: 'RequestsByTargetUserIndex',
 			partitionKey: { name: 'targetUserId', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING }
+		})
+
+		// Request comments table
+		this.requestCommentsTable = new Table(this, 'RequestCommentsTable', {
+			tableName: process.env.TABLE_NAME_REQUEST_COMMENTS ?? `umbro-request-comments-${stageKey}`,
+			partitionKey: { name: 'requestId', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING },
+			billingMode: BillingMode.PAY_PER_REQUEST,
+			removalPolicy,
+			...(needsBackups && {
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+			})
+		})
+		this.requestCommentsTable.addGlobalSecondaryIndex({
+			indexName: 'CommentsByIdIndex',
+			partitionKey: { name: 'id', type: AttributeType.STRING },
 			sortKey: { name: 'createdAt', type: AttributeType.STRING }
 		})
 
