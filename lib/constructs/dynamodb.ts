@@ -107,6 +107,30 @@ export class DynamoDBConstruct extends Construct {
 			sortKey: { name: 'createdAt', type: AttributeType.STRING }
 		})
 
+		// Applications table
+		this.applicationsTable = new Table(this, 'ApplicationsTable', {
+			tableName: process.env.TABLE_NAME_APPLICATIONS ?? `umbro-applications-${stageKey}`,
+			partitionKey: { name: 'userId', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING },
+			billingMode: BillingMode.PAY_PER_REQUEST,
+			removalPolicy,
+			...(needsBackups && {
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+			})
+		})
+
+		// Environments table
+		this.environmentsTable = new Table(this, 'EnvironmentsTable', {
+			tableName: process.env.TABLE_NAME_ENVIRONMENTS ?? `umbro-environments-${stageKey}`,
+			partitionKey: { name: 'teamId', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING },
+			billingMode: BillingMode.PAY_PER_REQUEST,
+			removalPolicy,
+			...(needsBackups && {
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+			})
+		})
+
 		// Sessions table removed (JWT sessions in app)
 
         // Service tokens table (custom for Umbro)
