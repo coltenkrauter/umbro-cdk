@@ -1,6 +1,6 @@
 {
 	"name": "@coltenkrauter/umbro-cdk",
-	"version": "0.12.0",
+	"version": "0.12.1",
 	"private": true,
 	"type": "module",
 	"keywords": [
@@ -17,7 +17,6 @@
 		"build": "tsc",
 		"cdk": "npm run node -- ./node_modules/aws-cdk/bin/cdk",
 		"deploy": "npm run cdk -- deploy --app 'npm run node -- ./lib/app.ts' --require-approval never",
-
 		"deploy-all": "npm run cdk -- deploy --app 'npm run node -- ./lib/app.ts' --require-approval never --all",
 		"diff": "npm run cdk -- --app 'npm run node -- ./lib/app.ts' diff",
 		"fix": "npm run lint -- --fix",

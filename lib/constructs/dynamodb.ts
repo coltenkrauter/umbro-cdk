@@ -24,8 +24,15 @@ export interface DynamoDBConstructProps {
  */
 export class DynamoDBConstruct extends Construct {
 	public readonly usersTable: Table
+    public readonly accessGrantsTable!: Table
+    public readonly applicationsTable!: Table
+    public readonly environmentsTable!: Table
+    public readonly requestsTable!: Table
     public readonly serviceTokensTable: Table
+    public readonly teamsTable!: Table
+    public readonly teamMembershipsTable!: Table
     public readonly rateLimitTable: Table
+    public readonly visitorsTable!: Table
 
 	constructor(scope: Construct, id: string, props: DynamoDBConstructProps) {
 		super(scope, id)
@@ -41,7 +48,7 @@ export class DynamoDBConstruct extends Construct {
 				// Users table (Auth.js users table)
 		// Note: Auth.js schema is constrained, but we can add audit fields as additional attributes
 		this.usersTable = new Table(this, 'UsersTable', {
-			tableName: `umbro-users-${stageKey}`,
+			tableName: process.env.TABLE_NAME_USERS ?? `umbro-users-${stageKey}`,
 			partitionKey: {
 				name: 'id',
 				type: AttributeType.STRING
@@ -72,12 +79,40 @@ export class DynamoDBConstruct extends Construct {
 			}
 		})
 
-        // Sessions table removed (JWT sessions in app)
+		// Teams table
+		this.teamsTable = new Table(this, 'TeamsTable', {
+			tableName: process.env.TABLE_NAME_TEAMS ?? `umbro-teams-${stageKey}`,
+			partitionKey: { name: 'id', type: AttributeType.STRING },
+			billingMode: BillingMode.PAY_PER_REQUEST,
+			removalPolicy,
+			...(needsBackups && {
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+			})
+		})
+
+		// Team memberships table
+		this.teamMembershipsTable = new Table(this, 'TeamMembershipsTable', {
+			tableName: process.env.TABLE_NAME_TEAM_MEMBERSHIPS ?? `umbro-team-memberships-${stageKey}`,
+			partitionKey: { name: 'teamId', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING },
+			billingMode: BillingMode.PAY_PER_REQUEST,
+			removalPolicy,
+			...(needsBackups && {
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+			})
+		})
+		this.teamMembershipsTable.addGlobalSecondaryIndex({
+			indexName: 'ByUser',
+			partitionKey: { name: 'userId', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING }
+		})
+
+		// Sessions table removed (JWT sessions in app)
 
         // Service tokens table (custom for Umbro)
 		// World-class design: userId#createdAt sort key for chronological ordering
 		this.serviceTokensTable = new Table(this, 'ServiceTokensTable', {
-			tableName: `umbro-service-tokens-${stageKey}`,
+			tableName: process.env.TABLE_NAME_SERVICE_TOKENS ?? `umbro-service-tokens-${stageKey}`,
 			partitionKey: {
 				name: 'userId',
 				type: AttributeType.STRING
@@ -116,14 +151,87 @@ export class DynamoDBConstruct extends Construct {
 			sortKey: { name: 'tokenName', type: AttributeType.STRING }
 		})
 
-        // Rate limit table (basic fixed window). TTL enabled on 'expiresAt'.
-        this.rateLimitTable = new Table(this, 'RateLimitTable', {
-            tableName: `umbro-rate-limit-${stageKey}`,
-            partitionKey: { name: 'id', type: AttributeType.STRING },
-            sortKey: { name: 'createdAt', type: AttributeType.STRING },
-            billingMode: BillingMode.PAY_PER_REQUEST,
-            removalPolicy,
-            timeToLiveAttribute: 'expiresAt',
-        })
+		// Requests table
+		this.requestsTable = new Table(this, 'RequestsTable', {
+			tableName: process.env.TABLE_NAME_REQUESTS ?? `umbro-requests-${stageKey}`,
+			partitionKey: { name: 'id', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING },
+			billingMode: BillingMode.PAY_PER_REQUEST,
+			removalPolicy,
+			...(needsBackups && {
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+			})
+		})
+		this.requestsTable.addGlobalSecondaryIndex({
+			indexName: 'RequestsByTypeIndex',
+			partitionKey: { name: 'requestType', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING }
+		})
+		this.requestsTable.addGlobalSecondaryIndex({
+			indexName: 'RequestsByResourceIndex',
+			partitionKey: { name: 'resourceId', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING }
+		})
+		this.requestsTable.addGlobalSecondaryIndex({
+			indexName: 'RequestsByTargetTeamIndex',
+			partitionKey: { name: 'targetTeamId', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING }
+		})
+		this.requestsTable.addGlobalSecondaryIndex({
+			indexName: 'RequestsByTargetUserIndex',
+			partitionKey: { name: 'targetUserId', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING }
+		})
+
+		// Access grants table
+		this.accessGrantsTable = new Table(this, 'AccessGrantsTable', {
+			tableName: process.env.TABLE_NAME_ACCESS_GRANTS ?? `umbro-access-grants-${stageKey}`,
+			partitionKey: { name: 'id', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING },
+			billingMode: BillingMode.PAY_PER_REQUEST,
+			removalPolicy,
+			...(needsBackups && {
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+			})
+		})
+		this.accessGrantsTable.addGlobalSecondaryIndex({
+			indexName: 'GrantsByResourceIndex',
+			partitionKey: { name: 'resourceId', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING }
+		})
+		this.accessGrantsTable.addGlobalSecondaryIndex({
+			indexName: 'GrantsByTeamIndex',
+			partitionKey: { name: 'teamId', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING }
+		})
+
+		// Visitors table
+		this.visitorsTable = new Table(this, 'VisitorsTable', {
+			tableName: process.env.TABLE_NAME_VISITORS ?? `umbro-visitors-${stageKey}`,
+			partitionKey: { name: 'id', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING },
+			billingMode: BillingMode.PAY_PER_REQUEST,
+			removalPolicy,
+			...(needsBackups && {
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+			})
+		})
+		this.visitorsTable.addGlobalSecondaryIndex({
+			indexName: 'VisitorsByIpIndex',
+			partitionKey: { name: 'ip', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING }
+		})
+
+		// Rate limit table (basic fixed window)
+		this.rateLimitTable = new Table(this, 'RateLimitTable', {
+			tableName: process.env.TABLE_NAME_RATE_LIMIT ?? `umbro-rate-limit-${stageKey}`,
+			partitionKey: { name: 'id', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING },
+			billingMode: BillingMode.PAY_PER_REQUEST,
+			removalPolicy,
+			...(needsBackups && {
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+			})
+		})
 	}
 }
