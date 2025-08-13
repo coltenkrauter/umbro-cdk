@@ -27,6 +27,7 @@ export class DynamoDBConstruct extends Construct {
     public readonly accessGrantsTable!: Table
     public readonly applicationsTable!: Table
     public readonly environmentsTable!: Table
+    public readonly teamLinksTable!: Table
     public readonly requestsTable!: Table
     public readonly requestCommentsTable!: Table
     public readonly serviceTokensTable: Table
@@ -106,6 +107,18 @@ export class DynamoDBConstruct extends Construct {
 			indexName: 'ByUser',
 			partitionKey: { name: 'userId', type: AttributeType.STRING },
 			sortKey: { name: 'createdAt', type: AttributeType.STRING }
+		})
+
+		// Team links table
+		this.teamLinksTable = new Table(this, 'TeamLinksTable', {
+			tableName: process.env.TABLE_NAME_TEAM_LINKS ?? `umbro-team-links-${stageKey}`,
+			partitionKey: { name: 'parentTeamId', type: AttributeType.STRING },
+			sortKey: { name: 'childTeamId', type: AttributeType.STRING },
+			billingMode: BillingMode.PAY_PER_REQUEST,
+			removalPolicy,
+			...(needsBackups && {
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+			})
 		})
 
 		// Applications table

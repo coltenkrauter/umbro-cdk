@@ -79,6 +79,12 @@ export class Umbro extends Stack {
 			exportName: `UmbroStack-${stage}-TeamMembershipsTableName`
 		})
 
+		new CfnOutput(this, 'TeamLinksTableName', {
+			value: this.database.teamLinksTable.tableName,
+			description: 'DynamoDB Team Links Table Name',
+			exportName: `UmbroStack-${stage}-TeamLinksTableName`
+		})
+
 		new CfnOutput(this, 'RequestsTableName', {
 			value: this.database.requestsTable.tableName,
 			description: 'DynamoDB Requests Table Name',

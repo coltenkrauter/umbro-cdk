@@ -36,6 +36,7 @@ grantDynamoDBAccess({
         umbro.database.rateLimitTable,
         umbro.database.teamsTable,
         umbro.database.teamMembershipsTable,
+        umbro.database.teamLinksTable,
         umbro.database.applicationsTable,
         umbro.database.environmentsTable,
         umbro.database.requestsTable,

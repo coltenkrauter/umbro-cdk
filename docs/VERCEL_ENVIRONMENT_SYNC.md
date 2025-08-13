@@ -40,6 +40,7 @@ The following outputs are automatically synced:
 - `EnvironmentsTableName` → `TABLE_NAME_ENVIRONMENTS`
 - `TeamsTableName` → `TABLE_NAME_TEAMS`
 - `TeamMembershipsTableName` → `TABLE_NAME_TEAM_MEMBERSHIPS`
+- `TeamLinksTableName` → `TABLE_NAME_TEAM_LINKS`
 - `RequestsTableName` → `TABLE_NAME_REQUESTS`
 - `RequestCommentsTableName` → `TABLE_NAME_REQUEST_COMMENTS`
 - `AccessGrantsTableName` → `TABLE_NAME_ACCESS_GRANTS`

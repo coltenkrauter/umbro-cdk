@@ -41,6 +41,7 @@ interface CloudFormationOutputs {
     EnvironmentsTableName?: string
     TeamsTableName?: string
     TeamMembershipsTableName?: string
+    TeamLinksTableName?: string
     RequestsTableName?: string
     RequestCommentsTableName?: string
     AccessGrantsTableName?: string
@@ -175,6 +176,9 @@ class VercelEnvironmentUpdater {
                         case 'TeamMembershipsTableName':
                             outputs.TeamMembershipsTableName = output.OutputValue
                             break
+							case 'TeamLinksTableName':
+								outputs.TeamLinksTableName = output.OutputValue
+								break
                         case 'RequestsTableName':
                             outputs.RequestsTableName = output.OutputValue
                             break
@@ -323,6 +327,15 @@ class VercelEnvironmentUpdater {
                 type: 'plain'
             })
         }
+
+			if (outputs.TeamLinksTableName) {
+				envVars.push({
+					key: 'TABLE_NAME_TEAM_LINKS',
+					value: outputs.TeamLinksTableName,
+					target: this.targets.join(','),
+					type: 'plain'
+				})
+			}
 
         if (outputs.RequestsTableName) {
             envVars.push({
