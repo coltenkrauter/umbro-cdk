@@ -48,6 +48,7 @@ interface CloudFormationOutputs {
 	VisitorsTableName?: string
 	UserPermissionsTableName?: string
 	AuditLogsTableName?: string
+	PlansTableName?: string
 	ProfileBucketName?: string
 	AssetsBucketName?: string
 }
@@ -201,9 +202,12 @@ class VercelEnvironmentUpdater {
 						case 'AuditLogsTableName':
 							outputs.AuditLogsTableName = output.OutputValue
 							break
-									case 'ProfileBucketName':
-				outputs.ProfileBucketName = output.OutputValue
-				break
+						case 'PlansTableName':
+							outputs.PlansTableName = output.OutputValue
+							break
+						case 'ProfileBucketName':
+							outputs.ProfileBucketName = output.OutputValue
+							break
 						case 'AssetsBucketName':
 							outputs.AssetsBucketName = output.OutputValue
 							break
@@ -403,6 +407,15 @@ class VercelEnvironmentUpdater {
             envVars.push({
                 key: 'TABLE_NAME_AUDIT_LOGS',
                 value: outputs.AuditLogsTableName,
+                target: this.targets.join(','),
+                type: 'encrypted' // Table names should be encrypted for security
+            })
+        }
+
+        if (outputs.PlansTableName) {
+            envVars.push({
+                key: 'TABLE_NAME_PLANS',
+                value: outputs.PlansTableName,
                 target: this.targets.join(','),
                 type: 'encrypted' // Table names should be encrypted for security
             })

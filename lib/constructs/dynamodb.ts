@@ -35,8 +35,9 @@ export class DynamoDBConstruct extends Construct {
     public readonly teamMembershipsTable!: Table
     public readonly rateLimitTable: Table
     public readonly visitorsTable!: Table
-    public readonly userPermissionsTable: Table
-    public readonly auditLogsTable: Table
+    	public readonly userPermissionsTable: Table
+	public readonly auditLogsTable: Table
+	public readonly plansTable: Table
 
 	constructor(scope: Construct, id: string, props: DynamoDBConstructProps) {
 		super(scope, id)
@@ -384,6 +385,32 @@ export class DynamoDBConstruct extends Construct {
 			indexName: 'ByDateIndex',
 			partitionKey: { name: 'date', type: AttributeType.STRING }, // YYYY-MM-DD format
 			sortKey: { name: 'timestamp', type: AttributeType.STRING }
+		})
+
+		// Plans table - Subscription plans and user plan assignments
+		this.plansTable = new Table(this, 'PlansTable', {
+			tableName: `umbro-plans-${stageKey}`,
+			partitionKey: { name: 'id', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING },
+			billingMode: BillingMode.PAY_PER_REQUEST,
+			removalPolicy,
+			...(needsBackups && {
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+			})
+		})
+
+		// GSI for querying plans by name
+		this.plansTable.addGlobalSecondaryIndex({
+			indexName: 'ByNameIndex',
+			partitionKey: { name: 'name', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING }
+		})
+
+		// GSI for querying plans by price
+		this.plansTable.addGlobalSecondaryIndex({
+			indexName: 'ByPriceIndex',
+			partitionKey: { name: 'price', type: AttributeType.STRING },
+			sortKey: { name: 'createdAt', type: AttributeType.STRING }
 		})
 	}
 }

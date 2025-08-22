@@ -128,6 +128,13 @@ export class Umbro extends Stack {
 			exportName: `UmbroStack-${stage}-AuditLogsTableName`
 		})
 
+		// Plans table
+		new CfnOutput(this, 'PlansTableName', {
+			value: this.database.plansTable.tableName,
+			description: 'DynamoDB Plans Table Name',
+			exportName: `UmbroStack-${stage}-PlansTableName`
+		})
+
 		// S3 bucket outputs
 		new CfnOutput(this, 'ProfileBucketName', {
 			value: this.storage.profileBucket.bucketName,

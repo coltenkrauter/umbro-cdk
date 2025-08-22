@@ -45,6 +45,7 @@ grantDynamoDBAccess({
         umbro.database.visitorsTable,
         umbro.database.userPermissionsTable,
         umbro.database.auditLogsTable,
+        umbro.database.plansTable,
     ],
 })
 
