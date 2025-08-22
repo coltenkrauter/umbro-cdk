@@ -48,13 +48,13 @@ grantDynamoDBAccess({
     ],
 })
 
-// Grant S3 permissions for avatar and asset buckets
-grantS3BucketAccess({
-    role: vercelOidcStack.role,
-    buckets: [
-        umbro.storage.avatarBucket,
-        umbro.storage.assetsBucket,
-    ],
-})
+	// Grant S3 permissions for profile and asset buckets
+	grantS3BucketAccess({
+		role: vercelOidcStack.role,
+		buckets: [
+			umbro.storage.profileBucket,
+			umbro.storage.assetsBucket,
+		],
+	})
 
 

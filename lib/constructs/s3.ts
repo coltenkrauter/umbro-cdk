@@ -15,7 +15,7 @@ export interface S3ConstructProps {
 }
 
 export class S3Construct extends Construct {
-	public readonly avatarBucket: Bucket
+	public readonly profileBucket: Bucket
 	public readonly assetsBucket: Bucket
 
 	constructor(scope: Construct, id: string, props: S3ConstructProps) {
@@ -28,9 +28,9 @@ export class S3Construct extends Construct {
 		const isProduction = stage === Stage.Production
 		const removalPolicy = isProduction ? REMOVAL_POLICIES.PRODUCTION : REMOVAL_POLICIES.DEVELOPMENT
 
-		// Avatar bucket for user profile pictures - SECURITY HARDENED
-		this.avatarBucket = new Bucket(this, 'AvatarBucket', {
-			bucketName: `${S3_BUCKET_NAMES.AVATARS}-${stageKey}`,
+		// Profile bucket for user profile content (avatars, bio images, cover photos) - SECURITY HARDENED
+		this.profileBucket = new Bucket(this, 'ProfileBucket', {
+			bucketName: `${S3_BUCKET_NAMES.PROFILE}-${stageKey}`,
 			encryption: BucketEncryption.S3_MANAGED,
 			removalPolicy,
 			cors: [
@@ -42,7 +42,7 @@ export class S3Construct extends Construct {
 					exposedHeaders: CORS_CONFIG.EXPOSED_HEADERS
 				}
 			],
-			lifecycleRules: [S3_LIFECYCLE_RULES.AVATAR_CLEANUP],
+			lifecycleRules: [S3_LIFECYCLE_RULES.PROFILE_CLEANUP],
 			versioned: isProduction,
 			publicReadAccess: false,
 			blockPublicAccess: {
