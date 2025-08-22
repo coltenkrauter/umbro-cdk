@@ -3,7 +3,7 @@ import { App } from 'aws-cdk-lib'
 import { getConfig } from './config.js'
 import { Umbro } from './stacks/umbro.js'
 import { VercelOpenIDConnectStack } from './stacks/vercel-open-id-connect.js'
-import { grantDynamoDBAccess } from './utils/integration.js'
+import { grantDynamoDBAccess, grantS3BucketAccess } from './utils/integration.js'
 
 const config = getConfig()
 const app = new App()
@@ -43,6 +43,17 @@ grantDynamoDBAccess({
         umbro.database.requestCommentsTable,
         umbro.database.accessGrantsTable,
         umbro.database.visitorsTable,
+        umbro.database.userPermissionsTable,
+        umbro.database.auditLogsTable,
+    ],
+})
+
+// Grant S3 permissions for avatar and asset buckets
+grantS3BucketAccess({
+    role: vercelOidcStack.role,
+    buckets: [
+        umbro.storage.avatarBucket,
+        umbro.storage.assetsBucket,
     ],
 })
 

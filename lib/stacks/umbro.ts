@@ -3,6 +3,7 @@ import { Construct } from 'constructs'
 import { Stage } from '@krauters/structures'
 
 import { DynamoDBConstruct } from '../constructs/dynamodb.js'
+import { S3Construct } from '../constructs/s3.js'
 
 export interface UmbroProps extends StackProps {
 	stage: Stage
@@ -13,6 +14,7 @@ export interface UmbroProps extends StackProps {
  */
 export class Umbro extends Stack {
 	public readonly database: DynamoDBConstruct
+	public readonly storage: S3Construct
 
 	constructor(scope: Construct, id: string, props: UmbroProps) {
 		super(scope, id, props)
@@ -20,6 +22,10 @@ export class Umbro extends Stack {
 		const { stage } = props
 
 		this.database = new DynamoDBConstruct(this, 'Database', {
+			stage
+		})
+
+		this.storage = new S3Construct(this, 'Storage', {
 			stage
 		})
 
@@ -107,6 +113,32 @@ export class Umbro extends Stack {
 			value: this.database.visitorsTable.tableName,
 			description: 'DynamoDB Visitors Table Name',
 			exportName: `UmbroStack-${stage}-VisitorsTableName`
+		})
+
+		// New permission and audit tables
+		new CfnOutput(this, 'UserPermissionsTableName', {
+			value: this.database.userPermissionsTable.tableName,
+			description: 'DynamoDB User Permissions Table Name',
+			exportName: `UmbroStack-${stage}-UserPermissionsTableName`
+		})
+
+		new CfnOutput(this, 'AuditLogsTableName', {
+			value: this.database.auditLogsTable.tableName,
+			description: 'DynamoDB Audit Logs Table Name',
+			exportName: `UmbroStack-${stage}-AuditLogsTableName`
+		})
+
+		// S3 bucket outputs
+		new CfnOutput(this, 'AvatarBucketName', {
+			value: this.storage.avatarBucket.bucketName,
+			description: 'S3 Avatar Bucket Name',
+			exportName: `UmbroStack-${stage}-AvatarBucketName`
+		})
+
+		new CfnOutput(this, 'AssetsBucketName', {
+			value: this.storage.assetsBucket.bucketName,
+			description: 'S3 Assets Bucket Name',
+			exportName: `UmbroStack-${stage}-AssetsBucketName`
 		})
 	}
 

@@ -35,17 +35,21 @@ interface CloudFormationOutputs {
 	Region?: string
 	VercelRoleArn?: string
 	UsersTableName?: string
-    	RateLimitTableName?: string
+	RateLimitTableName?: string
 	ServiceTokensTableName?: string
-    ApplicationsTableName?: string
-    EnvironmentsTableName?: string
-    TeamsTableName?: string
-    TeamMembershipsTableName?: string
-    TeamLinksTableName?: string
-    RequestsTableName?: string
-    RequestCommentsTableName?: string
-    AccessGrantsTableName?: string
-    VisitorsTableName?: string
+	ApplicationsTableName?: string
+	EnvironmentsTableName?: string
+	TeamsTableName?: string
+	TeamMembershipsTableName?: string
+	TeamLinksTableName?: string
+	RequestsTableName?: string
+	RequestCommentsTableName?: string
+	AccessGrantsTableName?: string
+	VisitorsTableName?: string
+	UserPermissionsTableName?: string
+	AuditLogsTableName?: string
+	AvatarBucketName?: string
+	AssetsBucketName?: string
 }
 
 class VercelEnvironmentUpdater {
@@ -188,9 +192,21 @@ class VercelEnvironmentUpdater {
                         case 'AccessGrantsTableName':
                             outputs.AccessGrantsTableName = output.OutputValue
                             break
-                        case 'VisitorsTableName':
-                            outputs.VisitorsTableName = output.OutputValue
-                            break
+                        						case 'VisitorsTableName':
+							outputs.VisitorsTableName = output.OutputValue
+							break
+						case 'UserPermissionsTableName':
+							outputs.UserPermissionsTableName = output.OutputValue
+							break
+						case 'AuditLogsTableName':
+							outputs.AuditLogsTableName = output.OutputValue
+							break
+						case 'AvatarBucketName':
+							outputs.AvatarBucketName = output.OutputValue
+							break
+						case 'AssetsBucketName':
+							outputs.AssetsBucketName = output.OutputValue
+							break
 					}
 				}
 			})
@@ -368,6 +384,44 @@ class VercelEnvironmentUpdater {
             envVars.push({
                 key: 'TABLE_NAME_VISITORS',
                 value: outputs.VisitorsTableName,
+                target: this.targets.join(','),
+                type: 'plain'
+            })
+        }
+
+        // New permission and audit tables
+        if (outputs.UserPermissionsTableName) {
+            envVars.push({
+                key: 'USER_PERMISSIONS_TABLE',
+                value: outputs.UserPermissionsTableName,
+                target: this.targets.join(','),
+                type: 'plain'
+            })
+        }
+
+        if (outputs.AuditLogsTableName) {
+            envVars.push({
+                key: 'AUDIT_LOGS_TABLE',
+                value: outputs.AuditLogsTableName,
+                target: this.targets.join(','),
+                type: 'plain'
+            })
+        }
+
+        // S3 bucket names
+        if (outputs.AvatarBucketName) {
+            envVars.push({
+                key: 'AVATAR_BUCKET_NAME',
+                value: outputs.AvatarBucketName,
+                target: this.targets.join(','),
+                type: 'plain'
+            })
+        }
+
+        if (outputs.AssetsBucketName) {
+            envVars.push({
+                key: 'ASSETS_BUCKET_NAME',
+                value: outputs.AssetsBucketName,
                 target: this.targets.join(','),
                 type: 'plain'
             })

@@ -24,12 +24,43 @@ export function getConfig(): Config {
 	}
 
 	// Validate and convert stage using enum
-	const stageKey = stageInput as keyof typeof Stage
-	const stage = Stage[stageKey]
+	let stage: Stage
 	
-	if (!stage) {
-		const validStages = Object.values(Stage).join(', ')
-		throw new Error(`Invalid STAGE "${stageInput}". Valid options: ${validStages}`)
+	// Handle common aliases
+	switch (stageInput.toLowerCase()) {
+		case 'dev':
+		case 'development':
+			stage = Stage.Development
+			break
+		case 'alpha':
+			stage = Stage.Alpha
+			break
+		case 'beta':
+			stage = Stage.Beta
+			break
+		case 'prod':
+		case 'production':
+			stage = Stage.Production
+			break
+		case 'gamma':
+			stage = Stage.Gamma
+			break
+		case 'pipeline':
+			stage = Stage.Pipeline
+			break
+		case 'root':
+			stage = Stage.Root
+			break
+		default:
+			// Try direct enum lookup
+			const stageKey = stageInput as keyof typeof Stage
+			const directStage = Stage[stageKey]
+			if (directStage) {
+				stage = directStage
+			} else {
+				const validStages = Object.values(Stage).join(', ')
+				throw new Error(`Invalid STAGE "${stageInput}". Valid options: ${validStages}`)
+			}
 	}
 
 	return {

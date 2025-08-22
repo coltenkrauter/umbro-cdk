@@ -35,6 +35,8 @@ export class DynamoDBConstruct extends Construct {
     public readonly teamMembershipsTable!: Table
     public readonly rateLimitTable: Table
     public readonly visitorsTable!: Table
+    public readonly userPermissionsTable: Table
+    public readonly auditLogsTable: Table
 
 	constructor(scope: Construct, id: string, props: DynamoDBConstructProps) {
 		super(scope, id)
@@ -294,6 +296,94 @@ export class DynamoDBConstruct extends Construct {
 			...(needsBackups && {
 				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
 			})
+		})
+
+		// User Permissions table - Granular access control
+		this.userPermissionsTable = new Table(this, 'UserPermissionsTable', {
+			tableName: `umbro-user-permissions-${stageKey}`,
+			partitionKey: { name: 'userId', type: AttributeType.STRING },
+			sortKey: { name: 'resourceType#resourceId', type: AttributeType.STRING },
+			billingMode: BillingMode.PAY_PER_REQUEST,
+			removalPolicy,
+			timeToLiveAttribute: 'expiresAt',
+			...(needsBackups && {
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+			})
+		})
+
+		// GSI for querying permissions by resource
+		this.userPermissionsTable.addGlobalSecondaryIndex({
+			indexName: 'ByResourceIndex',
+			partitionKey: { name: 'resourceType', type: AttributeType.STRING },
+			sortKey: { name: 'resourceId', type: AttributeType.STRING }
+		})
+
+		// GSI for querying permissions by grantor
+		this.userPermissionsTable.addGlobalSecondaryIndex({
+			indexName: 'ByGrantorIndex',
+			partitionKey: { name: 'grantedBy', type: AttributeType.STRING },
+			sortKey: { name: 'grantedAt', type: AttributeType.STRING }
+		})
+
+		// GSI for querying permissions by type
+		this.userPermissionsTable.addGlobalSecondaryIndex({
+			indexName: 'ByPermissionTypeIndex',
+			partitionKey: { name: 'permission', type: AttributeType.STRING },
+			sortKey: { name: 'grantedAt', type: AttributeType.STRING }
+		})
+
+		// GSI for querying permissions by request
+		this.userPermissionsTable.addGlobalSecondaryIndex({
+			indexName: 'ByRequestIndex',
+			partitionKey: { name: 'requestId', type: AttributeType.STRING },
+			sortKey: { name: 'grantedAt', type: AttributeType.STRING }
+		})
+
+		// Audit Logs table - Comprehensive action tracking
+		this.auditLogsTable = new Table(this, 'AuditLogsTable', {
+			tableName: `umbro-audit-logs-${stageKey}`,
+			partitionKey: { name: 'id', type: AttributeType.STRING },
+			sortKey: { name: 'timestamp', type: AttributeType.STRING },
+			billingMode: BillingMode.PAY_PER_REQUEST,
+			removalPolicy,
+			...(needsBackups && {
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+			})
+		})
+
+		// GSI for querying audit logs by actor
+		this.auditLogsTable.addGlobalSecondaryIndex({
+			indexName: 'ByActorIndex',
+			partitionKey: { name: 'actorId', type: AttributeType.STRING },
+			sortKey: { name: 'timestamp', type: AttributeType.STRING }
+		})
+
+		// GSI for querying audit logs by resource
+		this.auditLogsTable.addGlobalSecondaryIndex({
+			indexName: 'ByResourceIndex',
+			partitionKey: { name: 'resourceType', type: AttributeType.STRING },
+			sortKey: { name: 'resourceId', type: AttributeType.STRING }
+		})
+
+		// GSI for querying audit logs by action
+		this.auditLogsTable.addGlobalSecondaryIndex({
+			indexName: 'ByActionIndex',
+			partitionKey: { name: 'action', type: AttributeType.STRING },
+			sortKey: { name: 'timestamp', type: AttributeType.STRING }
+		})
+
+		// GSI for querying audit logs by request
+		this.auditLogsTable.addGlobalSecondaryIndex({
+			indexName: 'ByRequestIndex',
+			partitionKey: { name: 'requestId', type: AttributeType.STRING },
+			sortKey: { name: 'timestamp', type: AttributeType.STRING }
+		})
+
+		// GSI for querying audit logs by time range
+		this.auditLogsTable.addGlobalSecondaryIndex({
+			indexName: 'ByDateIndex',
+			partitionKey: { name: 'date', type: AttributeType.STRING }, // YYYY-MM-DD format
+			sortKey: { name: 'timestamp', type: AttributeType.STRING }
 		})
 	}
 }
