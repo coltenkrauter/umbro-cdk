@@ -17,6 +17,8 @@ export interface S3ConstructProps {
 export class S3Construct extends Construct {
 	public readonly profileBucket: Bucket
 	public readonly assetsBucket: Bucket
+	// Backward compatibility - will be removed in next version
+	public readonly avatarBucket: Bucket
 
 	constructor(scope: Construct, id: string, props: S3ConstructProps) {
 		super(scope, id)
@@ -83,5 +85,8 @@ export class S3Construct extends Construct {
 			transferAcceleration: false, // Disable transfer acceleration for security
 			objectOwnership: ObjectOwnership.BUCKET_OWNER_ENFORCED // Enforce bucket owner control
 		})
+
+		// Backward compatibility - alias for profileBucket
+		this.avatarBucket = this.profileBucket
 	}
 }

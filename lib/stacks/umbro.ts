@@ -142,6 +142,13 @@ export class Umbro extends Stack {
 			exportName: `UmbroStack-${stage}-ProfileBucketName`
 		})
 
+		// Backward compatibility - will be removed in next version
+		new CfnOutput(this, 'AvatarBucketName', {
+			value: this.storage.avatarBucket.bucketName,
+			description: 'S3 Avatar Bucket Name (Backward Compatibility)',
+			exportName: `UmbroStack-${stage}-AvatarBucketName`
+		})
+
 		new CfnOutput(this, 'AssetsBucketName', {
 			value: this.storage.assetsBucket.bucketName,
 			description: 'S3 Assets Bucket Name',
