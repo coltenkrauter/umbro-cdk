@@ -136,12 +136,9 @@ export class Umbro extends Stack {
 		})
 
 		// S3 bucket outputs
-		new CfnOutput(this, 'ProfileBucketName', {
-			value: this.storage.profileBucket.bucketName,
-			description: 'S3 Profile Bucket Name',
-			exportName: `UmbroStack-${stage}-ProfileBucketName`
-		})
-
+		// Note: ProfileBucketName export temporarily removed to avoid conflicts during transition
+		// TODO: Add ProfileBucketName export in next version after Vercel OIDC is updated
+		
 		// Backward compatibility - will be removed in next version
 		new CfnOutput(this, 'AvatarBucketName', {
 			value: this.storage.avatarBucket.bucketName,
