@@ -1,5 +1,5 @@
 import { RemovalPolicy } from 'aws-cdk-lib'
-import { Bucket, BucketEncryption, HttpMethods } from 'aws-cdk-lib/aws-s3'
+import { Bucket, BucketEncryption, HttpMethods, ObjectOwnership } from 'aws-cdk-lib/aws-s3'
 import { Construct } from 'constructs'
 import { Stage } from '@krauters/structures'
 import { 
@@ -28,7 +28,7 @@ export class S3Construct extends Construct {
 		const isProduction = stage === Stage.Production
 		const removalPolicy = isProduction ? REMOVAL_POLICIES.PRODUCTION : REMOVAL_POLICIES.DEVELOPMENT
 
-		// Avatar bucket for user profile pictures
+		// Avatar bucket for user profile pictures - SECURITY HARDENED
 		this.avatarBucket = new Bucket(this, 'AvatarBucket', {
 			bucketName: `${S3_BUCKET_NAMES.AVATARS}-${stageKey}`,
 			encryption: BucketEncryption.S3_MANAGED,
@@ -50,10 +50,13 @@ export class S3Construct extends Construct {
 				blockPublicPolicy: true,
 				ignorePublicAcls: true,
 				restrictPublicBuckets: true
-			}
+			},
+			enforceSSL: true, // Force HTTPS/TLS for all requests
+			transferAcceleration: false, // Disable transfer acceleration for security
+			objectOwnership: ObjectOwnership.BUCKET_OWNER_ENFORCED // Enforce bucket owner control
 		})
 
-		// Assets bucket for general file storage
+		// Assets bucket for general file storage - SECURITY HARDENED
 		this.assetsBucket = new Bucket(this, 'AssetsBucket', {
 			bucketName: `${S3_BUCKET_NAMES.ASSETS}-${stageKey}`,
 			encryption: BucketEncryption.S3_MANAGED,
@@ -75,7 +78,10 @@ export class S3Construct extends Construct {
 				blockPublicPolicy: true,
 				ignorePublicAcls: true,
 				restrictPublicBuckets: true
-			}
+			},
+			enforceSSL: true, // Force HTTPS/TLS for all requests
+			transferAcceleration: false, // Disable transfer acceleration for security
+			objectOwnership: ObjectOwnership.BUCKET_OWNER_ENFORCED // Enforce bucket owner control
 		})
 	}
 }

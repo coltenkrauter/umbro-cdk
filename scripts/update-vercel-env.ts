@@ -281,21 +281,21 @@ class VercelEnvironmentUpdater {
 		}
 
 		// Add DynamoDB table names with consistent naming
-		if (outputs.UsersTableName) {
-			envVars.push({
-				key: 'TABLE_NAME_USERS',
-				value: outputs.UsersTableName,
-				target: this.targets.join(','),
-				type: 'plain'
-			})
-		}
+		        if (outputs.UsersTableName) {
+            envVars.push({
+                key: 'TABLE_NAME_USERS',
+                value: outputs.UsersTableName,
+                target: this.targets.join(','),
+                type: 'encrypted' // User data table should be encrypted
+            })
+        }
 
 		if (outputs.ServiceTokensTableName) {
 			envVars.push({
 				key: 'TABLE_NAME_SERVICE_TOKENS',
 				value: outputs.ServiceTokensTableName,
 				target: this.targets.join(','),
-				type: 'plain'
+				type: 'encrypted' // Service tokens table should be encrypted
 			})
 		}
 
@@ -376,7 +376,7 @@ class VercelEnvironmentUpdater {
                 key: 'TABLE_NAME_ACCESS_GRANTS',
                 value: outputs.AccessGrantsTableName,
                 target: this.targets.join(','),
-                type: 'plain'
+                type: 'encrypted' // Access grants table should be encrypted for security
             })
         }
 
@@ -389,41 +389,41 @@ class VercelEnvironmentUpdater {
             })
         }
 
-        // New permission and audit tables
+        // New permission and audit tables - following TYPE_NAME_CONTEXT pattern
         if (outputs.UserPermissionsTableName) {
             envVars.push({
-                key: 'USER_PERMISSIONS_TABLE',
+                key: 'TABLE_NAME_USER_PERMISSIONS',
                 value: outputs.UserPermissionsTableName,
                 target: this.targets.join(','),
-                type: 'plain'
+                type: 'encrypted' // Table names should be encrypted for security
             })
         }
 
         if (outputs.AuditLogsTableName) {
             envVars.push({
-                key: 'AUDIT_LOGS_TABLE',
+                key: 'TABLE_NAME_AUDIT_LOGS',
                 value: outputs.AuditLogsTableName,
                 target: this.targets.join(','),
-                type: 'plain'
+                type: 'encrypted' // Table names should be encrypted for security
             })
         }
 
-        // S3 bucket names
+        // S3 bucket names - following TYPE_NAME_CONTEXT pattern
         if (outputs.AvatarBucketName) {
             envVars.push({
-                key: 'AVATAR_BUCKET_NAME',
+                key: 'BUCKET_NAME_AVATARS',
                 value: outputs.AvatarBucketName,
                 target: this.targets.join(','),
-                type: 'plain'
+                type: 'encrypted' // S3 bucket names should be encrypted for security
             })
         }
 
         if (outputs.AssetsBucketName) {
             envVars.push({
-                key: 'ASSETS_BUCKET_NAME',
+                key: 'BUCKET_NAME_ASSETS',
                 value: outputs.AssetsBucketName,
                 target: this.targets.join(','),
-                type: 'plain'
+                type: 'encrypted' // S3 bucket names should be encrypted for security
             })
         }
 

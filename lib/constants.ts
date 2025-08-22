@@ -87,11 +87,14 @@ export const DYNAMODB_TABLE_NAMES = {
 	AUDIT_LOGS: 'umbro-audit-logs'
 } as const
 
-// S3 Bucket Names
-export const S3_BUCKET_NAMES = {
+// S3 Bucket Names - Following TYPE_NAME_CONTEXT pattern
+export const BUCKET_NAMES = {
 	AVATARS: 'umbro-avatars',
 	ASSETS: 'umbro-assets'
 } as const
+
+// Backwards compatibility
+export const S3_BUCKET_NAMES = BUCKET_NAMES
 
 // Permission Types
 export const PERMISSION_TYPES = {
@@ -136,13 +139,24 @@ export const ACTOR_TYPES = {
 	SERVICE: 'service'
 } as const
 
-// CORS Configuration
+// CORS Configuration - SECURITY HARDENED
 export const CORS_CONFIG = {
-	ALLOWED_ORIGINS: ['*'],
+	ALLOWED_ORIGINS: [
+		'https://umbro.vercel.app',
+		'https://*.vercel.app', // Allow Vercel preview deployments
+		'http://localhost:3000', // Local development only
+		'https://localhost:3000' // HTTPS local development
+	],
 	ALLOWED_METHODS: [
 		'GET', 'PUT', 'POST', 'DELETE'
 	],
-	ALLOWED_HEADERS: ['*'],
+	ALLOWED_HEADERS: [
+		'Content-Type',
+		'Authorization',
+		'x-amz-date',
+		'x-amz-security-token',
+		'x-amz-user-agent'
+	],
 	MAX_AGE: 3000,
 	EXPOSED_HEADERS: ['ETag']
 }
