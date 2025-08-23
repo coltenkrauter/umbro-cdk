@@ -34,6 +34,10 @@ runs:
       shell: bash
       run: STAGE=${{ inputs.environment }} npm run diff
 
-    - name: Deploy changes for [${{ github.head_ref || github.ref_name }}]
+    - name: Deploy UmbroVercelOIDC stack first
       shell: bash
-      run: STAGE=${{ inputs.environment }} npm run deploy-all 
+      run: STAGE=${{ inputs.environment }} npm run cdk -- deploy UmbroVercelOIDC --require-approval never --exclusively
+    
+    - name: Deploy Umbro stack second
+      shell: bash
+      run: STAGE=${{ inputs.environment }} npm run cdk -- deploy Umbro --require-approval never --exclusively 
