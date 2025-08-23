@@ -37,12 +37,12 @@ jobs:
       - name: Step 1 - Deploy UmbroVercelOIDC to update permissions
         run: |
           echo "🚀 Deploying UmbroVercelOIDC to update S3 permissions..."
-          STAGE=Alpha npm run cdk -- deploy UmbroVercelOIDC --require-approval never --force
+          STAGE=Alpha npm run cdk -- deploy UmbroVercelOIDC --require-approval never --exclusively
       
       - name: Step 2 - Deploy Umbro with new bucket names
         run: |
           echo "🚀 Deploying Umbro with new bucket names..."
-          STAGE=Alpha npm run cdk -- deploy Umbro --require-approval never --force
+          STAGE=Alpha npm run cdk -- deploy Umbro --require-approval never --exclusively
       
       - name: Step 3 - Update Vercel Environment Variables
         env:
