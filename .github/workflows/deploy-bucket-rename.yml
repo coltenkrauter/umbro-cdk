@@ -1,0 +1,43 @@
+name: Deploy Bucket Rename Fix
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Step 1 - Deploy OIDC stack to remove old S3 references
+        run: |
+          echo "🚀 Deploying UmbroVercelOIDC to remove old S3 references..."
+          STAGE=Alpha npm run cdk -- deploy UmbroVercelOIDC --require-approval never --force
+      
+      - name: Step 2 - Deploy Umbro stack with new bucket names
+        run: |
+          echo "🚀 Deploying Umbro with new bucket names..."
+          STAGE=Alpha npm run cdk -- deploy Umbro --require-approval never --force
+      
+      - name: Step 3 - Verify both stacks
+        run: |
+          echo "✅ Verifying deployment..."
+          STAGE=Alpha npm run cdk -- diff

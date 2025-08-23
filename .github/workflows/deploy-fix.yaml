@@ -1,0 +1,60 @@
+name: Deploy Fix for Bucket Rename
+run-name: Deploy Fix [${{ github.head_ref || github.ref_name }}] triggered by [${{ github.event_name }}/${{ github.actor }}]
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-alpha-fix:
+    runs-on: ubuntu-latest
+    environment: Alpha
+    concurrency:
+      group: ${{ github.workflow }}-alpha-fix
+      cancel-in-progress: false
+    permissions:
+      actions: write
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/GitHubActions
+          aws-region: us-east-1
+      
+      - name: Install Dependencies
+        run: npm ci
+      
+      - name: Step 1 - Deploy UmbroVercelOIDC to update permissions
+        run: |
+          echo "🚀 Deploying UmbroVercelOIDC to update S3 permissions..."
+          STAGE=Alpha npm run cdk -- deploy UmbroVercelOIDC --require-approval never --force
+      
+      - name: Step 2 - Deploy Umbro with new bucket names
+        run: |
+          echo "🚀 Deploying Umbro with new bucket names..."
+          STAGE=Alpha npm run cdk -- deploy Umbro --require-approval never --force
+      
+      - name: Step 3 - Update Vercel Environment Variables
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          TARGETS: preview,development
+        run: |
+          echo "🔄 Updating Vercel environment variables..."
+          npm run update-vercel-env
+      
+      - name: Verify Deployment
+        run: |
+          echo "✅ Verifying deployment..."
+          STAGE=Alpha npm run cdk -- diff
