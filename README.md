@@ -22,6 +22,10 @@ This package does NOT contain:
 - AWS CLI configured with appropriate credentials
 - AWS CDK CLI installed globally: `npm install -g aws-cdk`
 
+## Local Development
+
+For local development with DynamoDB and S3, see [DEVELOPER.md](docs/DEVELOPER.md) for complete setup instructions.
+
 ## Account Provisioning & GitHub OIDC
 
 **Important**: Account provisioning and GitHub OIDC configuration are now handled automatically by the [Venice](https://github.com/coltenkrauter/venice) package. Venice is a CDK automation repository that uses GitHub Actions to configure accounts and set up GitHub OIDC providers automatically.
@@ -70,6 +74,7 @@ Since Venice handles account provisioning and GitHub OIDC, you only need to depl
 
 ## Available Scripts
 
+### Infrastructure
 - `npm run build` - Compile TypeScript
 - `npm run synth` - Synthesize CloudFormation templates
 - `npm run diff` - Show differences between deployed stack and current code
@@ -77,6 +82,14 @@ Since Venice handles account provisioning and GitHub OIDC, you only need to depl
 - `npm run deploy-all` - Deploy all stacks
 - `npm run lint` - Run ESLint
 - `npm run test` - Run tests (currently just linting)
+
+### Local Development
+- `npm run dev:dynamo:start` - Start local DynamoDB
+- `npm run dev:dynamo:bootstrap` - Setup DynamoDB tables
+- `npm run dev:s3:start` - Start local S3 (MinIO)
+- `npm run dev:s3:bootstrap` - Setup S3 buckets
+
+*Note: Local development scripts are in the main [umbro](https://github.com/coltenkrauter/umbro) repository*
 
 ## Infrastructure Components
 
