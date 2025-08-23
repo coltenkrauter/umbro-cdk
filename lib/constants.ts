@@ -26,8 +26,8 @@ export const S3_LIFECYCLE_DURATIONS = {
 
 // S3 Lifecycle Rules
 export const S3_LIFECYCLE_RULES = {
-	PROFILE_CLEANUP: {
-		id: 'profile-cleanup',
+	AVATAR_CLEANUP: {
+		id: 'avatar-cleanup',
 		enabled: true,
 		expiration: S3_LIFECYCLE_DURATIONS.ONE_YEAR,
 		transitions: [
@@ -89,7 +89,8 @@ export const DYNAMODB_TABLE_NAMES = {
 
 // S3 Bucket Names - Following TYPE_NAME_CONTEXT pattern
 export const BUCKET_NAMES = {
-	PROFILE: 'umbro-profile', // Primary bucket for user profiles
+	AVATAR: 'umbro-avatar', // Temporarily using avatar during transition
+	PROFILE: 'umbro-profile', // Will be used in next version
 	ASSETS: 'umbro-assets'
 } as const
 
