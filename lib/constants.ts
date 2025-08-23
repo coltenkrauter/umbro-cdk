@@ -84,7 +84,8 @@ export const DYNAMODB_TABLE_NAMES = {
 	VISITORS: 'umbro-visitors',
 	RATE_LIMIT: 'umbro-rate-limit',
 	USER_PERMISSIONS: 'umbro-user-permissions',
-	AUDIT_LOGS: 'umbro-audit-logs'
+	AUDIT_LOGS: 'umbro-audit-logs',
+	PLANS: 'umbro-plans'
 } as const
 
 // S3 Bucket Names - Following TYPE_NAME_CONTEXT pattern
@@ -165,4 +166,32 @@ export const CORS_CONFIG = {
 export const ENCRYPTION_CONFIG = {
 	S3: 'AES256',
 	DYNAMODB: 'AWS_MANAGED'
+} as const
+
+// S3 Bucket Configuration
+export const S3_BUCKET_CONFIG = {
+	ENCRYPTION: 'S3_MANAGED',
+	OBJECT_OWNERSHIP: 'BUCKET_OWNER_ENFORCED',
+	ENFORCE_SSL: true,
+	TRANSFER_ACCELERATION: false,
+	PUBLIC_READ_ACCESS: false
+} as const
+
+// S3 Block Public Access Configuration
+export const S3_BLOCK_PUBLIC_ACCESS = {
+	BLOCK_PUBLIC_ACLS: true,
+	BLOCK_PUBLIC_POLICY: true,
+	IGNORE_PUBLIC_ACLS: true,
+	RESTRICT_PUBLIC_BUCKETS: true
+} as const
+
+// DynamoDB Configuration
+export const DYNAMODB_CONFIG = {
+	BILLING_MODE: 'PAY_PER_REQUEST',
+	ATTRIBUTE_TYPES: {
+		STRING: 'STRING',
+		NUMBER: 'NUMBER',
+		BINARY: 'BINARY'
+	},
+	POINT_IN_TIME_RECOVERY: true
 } as const

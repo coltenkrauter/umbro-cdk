@@ -2,6 +2,11 @@ import { RemovalPolicy } from 'aws-cdk-lib'
 import { AttributeType, BillingMode, Table } from 'aws-cdk-lib/aws-dynamodb'
 import { Construct } from 'constructs'
 import { Stage } from '@krauters/structures'
+import { 
+	DYNAMODB_TABLE_NAMES,
+	DYNAMODB_CONFIG,
+	REMOVAL_POLICIES
+} from '../constants.js'
 
 export interface DynamoDBConstructProps {
 	stage: Stage
@@ -48,12 +53,12 @@ export class DynamoDBConstruct extends Construct {
 		// Stage-based configuration
 		const isProduction = stage === Stage.Production
 		const needsBackups = stage === Stage.Beta || stage === Stage.Production
-		const removalPolicy = isProduction ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY
+		const removalPolicy = isProduction ? REMOVAL_POLICIES.PRODUCTION : REMOVAL_POLICIES.DEVELOPMENT
 
 				// Users table (Auth.js users table)
 		// Note: Auth.js schema is constrained, but we can add audit fields as additional attributes
 		this.usersTable = new Table(this, 'UsersTable', {
-			tableName: process.env.TABLE_NAME_USERS ?? `umbro-users-${stageKey}`,
+			tableName: process.env.TABLE_NAME_USERS ?? `${DYNAMODB_TABLE_NAMES.USERS}-${stageKey}`,
 			partitionKey: {
 				name: 'id',
 				type: AttributeType.STRING
@@ -66,7 +71,7 @@ export class DynamoDBConstruct extends Construct {
 			removalPolicy,
 			...(needsBackups && {
 				pointInTimeRecoverySpecification: {
-					pointInTimeRecoveryEnabled: true
+					pointInTimeRecoveryEnabled: DYNAMODB_CONFIG.POINT_IN_TIME_RECOVERY
 				}
 			})
 		})
@@ -86,24 +91,24 @@ export class DynamoDBConstruct extends Construct {
 
 		// Teams table
 		this.teamsTable = new Table(this, 'TeamsTable', {
-			tableName: process.env.TABLE_NAME_TEAMS ?? `umbro-teams-${stageKey}`,
+			tableName: process.env.TABLE_NAME_TEAMS ?? `${DYNAMODB_TABLE_NAMES.TEAMS}-${stageKey}`,
 			partitionKey: { name: 'id', type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy,
 			...(needsBackups && {
-				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: DYNAMODB_CONFIG.POINT_IN_TIME_RECOVERY }
 			})
 		})
 
 		// Team memberships table
 		this.teamMembershipsTable = new Table(this, 'TeamMembershipsTable', {
-			tableName: process.env.TABLE_NAME_TEAM_MEMBERSHIPS ?? `umbro-team-memberships-${stageKey}`,
+			tableName: process.env.TABLE_NAME_TEAM_MEMBERSHIPS ?? `${DYNAMODB_TABLE_NAMES.TEAM_MEMBERSHIPS}-${stageKey}`,
 			partitionKey: { name: 'teamId', type: AttributeType.STRING },
 			sortKey: { name: 'createdAt', type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy,
 			...(needsBackups && {
-				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: DYNAMODB_CONFIG.POINT_IN_TIME_RECOVERY }
 			})
 		})
 		this.teamMembershipsTable.addGlobalSecondaryIndex({
@@ -114,25 +119,25 @@ export class DynamoDBConstruct extends Construct {
 
 		// Team links table
 		this.teamLinksTable = new Table(this, 'TeamLinksTable', {
-			tableName: process.env.TABLE_NAME_TEAM_LINKS ?? `umbro-team-links-${stageKey}`,
+			tableName: process.env.TABLE_NAME_TEAM_LINKS ?? `${DYNAMODB_TABLE_NAMES.TEAM_LINKS}-${stageKey}`,
 			partitionKey: { name: 'parentTeamId', type: AttributeType.STRING },
 			sortKey: { name: 'childTeamId', type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy,
 			...(needsBackups && {
-				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: DYNAMODB_CONFIG.POINT_IN_TIME_RECOVERY }
 			})
 		})
 
 		// Applications table
 		this.applicationsTable = new Table(this, 'ApplicationsTable', {
-			tableName: process.env.TABLE_NAME_APPLICATIONS ?? `umbro-applications-${stageKey}`,
+			tableName: process.env.TABLE_NAME_APPLICATIONS ?? `${DYNAMODB_TABLE_NAMES.APPLICATIONS}-${stageKey}`,
 			partitionKey: { name: 'userId', type: AttributeType.STRING },
 			sortKey: { name: 'createdAt', type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy,
 			...(needsBackups && {
-				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: DYNAMODB_CONFIG.POINT_IN_TIME_RECOVERY }
 			})
 		})
 
@@ -145,13 +150,13 @@ export class DynamoDBConstruct extends Construct {
 
 		// Environments table
 		this.environmentsTable = new Table(this, 'EnvironmentsTable', {
-			tableName: process.env.TABLE_NAME_ENVIRONMENTS ?? `umbro-environments-${stageKey}`,
+			tableName: process.env.TABLE_NAME_ENVIRONMENTS ?? `${DYNAMODB_TABLE_NAMES.ENVIRONMENTS}-${stageKey}`,
 			partitionKey: { name: 'teamId', type: AttributeType.STRING },
 			sortKey: { name: 'createdAt', type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy,
 			...(needsBackups && {
-				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: DYNAMODB_CONFIG.POINT_IN_TIME_RECOVERY }
 			})
 		})
 
@@ -160,7 +165,7 @@ export class DynamoDBConstruct extends Construct {
         // Service tokens table (custom for Umbro)
 		// World-class design: userId#createdAt sort key for chronological ordering
 		this.serviceTokensTable = new Table(this, 'ServiceTokensTable', {
-			tableName: process.env.TABLE_NAME_SERVICE_TOKENS ?? `umbro-service-tokens-${stageKey}`,
+			tableName: process.env.TABLE_NAME_SERVICE_TOKENS ?? `${DYNAMODB_TABLE_NAMES.SERVICE_TOKENS}-${stageKey}`,
 			partitionKey: {
 				name: 'userId',
 				type: AttributeType.STRING
@@ -174,7 +179,7 @@ export class DynamoDBConstruct extends Construct {
 			timeToLiveAttribute: 'expiresAt',
 			...(needsBackups && {
 				pointInTimeRecoverySpecification: {
-					pointInTimeRecoveryEnabled: true
+					pointInTimeRecoveryEnabled: DYNAMODB_CONFIG.POINT_IN_TIME_RECOVERY
 				}
 			})
 		})
@@ -201,13 +206,13 @@ export class DynamoDBConstruct extends Construct {
 
 		// Requests table
 		this.requestsTable = new Table(this, 'RequestsTable', {
-			tableName: process.env.TABLE_NAME_REQUESTS ?? `umbro-requests-${stageKey}`,
+			tableName: process.env.TABLE_NAME_REQUESTS ?? `${DYNAMODB_TABLE_NAMES.REQUESTS}-${stageKey}`,
 			partitionKey: { name: 'id', type: AttributeType.STRING },
 			sortKey: { name: 'createdAt', type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy,
 			...(needsBackups && {
-				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: DYNAMODB_CONFIG.POINT_IN_TIME_RECOVERY }
 			})
 		})
 		this.requestsTable.addGlobalSecondaryIndex({
@@ -233,13 +238,13 @@ export class DynamoDBConstruct extends Construct {
 
 		// Request comments table
 		this.requestCommentsTable = new Table(this, 'RequestCommentsTable', {
-			tableName: process.env.TABLE_NAME_REQUEST_COMMENTS ?? `umbro-request-comments-${stageKey}`,
+			tableName: process.env.TABLE_NAME_REQUEST_COMMENTS ?? `${DYNAMODB_TABLE_NAMES.REQUEST_COMMENTS}-${stageKey}`,
 			partitionKey: { name: 'requestId', type: AttributeType.STRING },
 			sortKey: { name: 'createdAt', type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy,
 			...(needsBackups && {
-				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: DYNAMODB_CONFIG.POINT_IN_TIME_RECOVERY }
 			})
 		})
 		this.requestCommentsTable.addGlobalSecondaryIndex({
@@ -250,13 +255,13 @@ export class DynamoDBConstruct extends Construct {
 
 		// Access grants table
 		this.accessGrantsTable = new Table(this, 'AccessGrantsTable', {
-			tableName: process.env.TABLE_NAME_ACCESS_GRANTS ?? `umbro-access-grants-${stageKey}`,
+			tableName: process.env.TABLE_NAME_ACCESS_GRANTS ?? `${DYNAMODB_TABLE_NAMES.ACCESS_GRANTS}-${stageKey}`,
 			partitionKey: { name: 'id', type: AttributeType.STRING },
 			sortKey: { name: 'createdAt', type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy,
 			...(needsBackups && {
-				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: DYNAMODB_CONFIG.POINT_IN_TIME_RECOVERY }
 			})
 		})
 		this.accessGrantsTable.addGlobalSecondaryIndex({
@@ -272,13 +277,13 @@ export class DynamoDBConstruct extends Construct {
 
 		// Visitors table
 		this.visitorsTable = new Table(this, 'VisitorsTable', {
-			tableName: process.env.TABLE_NAME_VISITORS ?? `umbro-visitors-${stageKey}`,
+			tableName: process.env.TABLE_NAME_VISITORS ?? `${DYNAMODB_TABLE_NAMES.VISITORS}-${stageKey}`,
 			partitionKey: { name: 'id', type: AttributeType.STRING },
 			sortKey: { name: 'createdAt', type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy,
 			...(needsBackups && {
-				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: DYNAMODB_CONFIG.POINT_IN_TIME_RECOVERY }
 			})
 		})
 		this.visitorsTable.addGlobalSecondaryIndex({
@@ -289,26 +294,26 @@ export class DynamoDBConstruct extends Construct {
 
 		// Rate limit table (basic fixed window)
 		this.rateLimitTable = new Table(this, 'RateLimitTable', {
-			tableName: process.env.TABLE_NAME_RATE_LIMIT ?? `umbro-rate-limit-${stageKey}`,
+			tableName: process.env.TABLE_NAME_RATE_LIMIT ?? `${DYNAMODB_TABLE_NAMES.RATE_LIMIT}-${stageKey}`,
 			partitionKey: { name: 'id', type: AttributeType.STRING },
 			sortKey: { name: 'createdAt', type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy,
 			...(needsBackups && {
-				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: DYNAMODB_CONFIG.POINT_IN_TIME_RECOVERY }
 			})
 		})
 
 		// User Permissions table - Granular access control
 		this.userPermissionsTable = new Table(this, 'UserPermissionsTable', {
-			tableName: `umbro-user-permissions-${stageKey}`,
+			tableName: `${DYNAMODB_TABLE_NAMES.USER_PERMISSIONS}-${stageKey}`,
 			partitionKey: { name: 'userId', type: AttributeType.STRING },
 			sortKey: { name: 'resourceType#resourceId', type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy,
 			timeToLiveAttribute: 'expiresAt',
 			...(needsBackups && {
-				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: DYNAMODB_CONFIG.POINT_IN_TIME_RECOVERY }
 			})
 		})
 
@@ -342,13 +347,13 @@ export class DynamoDBConstruct extends Construct {
 
 		// Audit Logs table - Comprehensive action tracking
 		this.auditLogsTable = new Table(this, 'AuditLogsTable', {
-			tableName: `umbro-audit-logs-${stageKey}`,
+			tableName: `${DYNAMODB_TABLE_NAMES.AUDIT_LOGS}-${stageKey}`,
 			partitionKey: { name: 'id', type: AttributeType.STRING },
 			sortKey: { name: 'timestamp', type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy,
 			...(needsBackups && {
-				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: DYNAMODB_CONFIG.POINT_IN_TIME_RECOVERY }
 			})
 		})
 
@@ -389,13 +394,13 @@ export class DynamoDBConstruct extends Construct {
 
 		// Plans table - Subscription plans and user plan assignments
 		this.plansTable = new Table(this, 'PlansTable', {
-			tableName: `umbro-plans-${stageKey}`,
+			tableName: `${DYNAMODB_TABLE_NAMES.PLANS}-${stageKey}`,
 			partitionKey: { name: 'id', type: AttributeType.STRING },
 			sortKey: { name: 'createdAt', type: AttributeType.STRING },
 			billingMode: BillingMode.PAY_PER_REQUEST,
 			removalPolicy,
 			...(needsBackups && {
-				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: true }
+				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: DYNAMODB_CONFIG.POINT_IN_TIME_RECOVERY }
 			})
 		})
 

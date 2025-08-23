@@ -1,13 +1,15 @@
-import { RemovalPolicy } from 'aws-cdk-lib'
 import { Bucket, BucketEncryption, HttpMethods, ObjectOwnership } from 'aws-cdk-lib/aws-s3'
 import { Construct } from 'constructs'
 import { Stage } from '@krauters/structures'
 import { 
 	S3_BUCKET_NAMES, 
 	S3_LIFECYCLE_RULES, 
+	S3_LIFECYCLE_DURATIONS,
+	S3_STORAGE_CLASSES,
+	S3_BUCKET_CONFIG,
+	S3_BLOCK_PUBLIC_ACCESS,
 	REMOVAL_POLICIES, 
-	CORS_CONFIG, 
-	ENCRYPTION_CONFIG 
+	CORS_CONFIG
 } from '../constants.js'
 
 export interface S3ConstructProps {
@@ -30,6 +32,20 @@ export class S3Construct extends Construct {
 		const isProduction = stage === Stage.Production
 		const removalPolicy = isProduction ? REMOVAL_POLICIES.PRODUCTION : REMOVAL_POLICIES.DEVELOPMENT
 
+		// Create versioning lifecycle rule for production (limit to 4 versions)
+		const versioningLifecycleRule = isProduction ? {
+			id: 'versioning-cleanup',
+			enabled: true,
+			noncurrentVersionExpiration: S3_LIFECYCLE_DURATIONS.IMMEDIATE, // Delete old versions after 1 day
+			noncurrentVersionTransitions: [
+				{
+					storageClass: S3_STORAGE_CLASSES.GLACIER,
+					transitionAfter: S3_LIFECYCLE_DURATIONS.IMMEDIATE
+				}
+			],
+			abortIncompleteMultipartUploadAfter: S3_LIFECYCLE_DURATIONS.IMMEDIATE
+		} : undefined
+
 		// Profile bucket for user content (avatars, bio images, cover photos) - SECURITY HARDENED
 		// Note: Using existing bucket name 'AvatarBucket' for compatibility
 		// Migration to profile naming completed successfully
@@ -46,18 +62,21 @@ export class S3Construct extends Construct {
 					exposedHeaders: CORS_CONFIG.EXPOSED_HEADERS
 				}
 			],
-			lifecycleRules: [S3_LIFECYCLE_RULES.PROFILE_CLEANUP],
+			lifecycleRules: [
+				S3_LIFECYCLE_RULES.PROFILE_CLEANUP,
+				...(versioningLifecycleRule ? [versioningLifecycleRule] : [])
+			].filter(Boolean),
 			versioned: isProduction,
-			publicReadAccess: false,
+			publicReadAccess: S3_BUCKET_CONFIG.PUBLIC_READ_ACCESS,
 			blockPublicAccess: {
-				blockPublicAcls: true,
-				blockPublicPolicy: true,
-				ignorePublicAcls: true,
-				restrictPublicBuckets: true
+				blockPublicAcls: S3_BLOCK_PUBLIC_ACCESS.BLOCK_PUBLIC_ACLS,
+				blockPublicPolicy: S3_BLOCK_PUBLIC_ACCESS.BLOCK_PUBLIC_POLICY,
+				ignorePublicAcls: S3_BLOCK_PUBLIC_ACCESS.IGNORE_PUBLIC_ACLS,
+				restrictPublicBuckets: S3_BLOCK_PUBLIC_ACCESS.RESTRICT_PUBLIC_BUCKETS
 			},
-			enforceSSL: true, // Force HTTPS/TLS for all requests
-			transferAcceleration: false, // Disable transfer acceleration for security
-			objectOwnership: ObjectOwnership.BUCKET_OWNER_ENFORCED // Enforce bucket owner control
+			enforceSSL: S3_BUCKET_CONFIG.ENFORCE_SSL,
+			transferAcceleration: S3_BUCKET_CONFIG.TRANSFER_ACCELERATION,
+			objectOwnership: ObjectOwnership.BUCKET_OWNER_ENFORCED
 		})
 
 		// Assets bucket for general file storage - SECURITY HARDENED
@@ -74,18 +93,21 @@ export class S3Construct extends Construct {
 					exposedHeaders: CORS_CONFIG.EXPOSED_HEADERS
 				}
 			],
-			lifecycleRules: [S3_LIFECYCLE_RULES.ASSETS_CLEANUP],
+			lifecycleRules: [
+				S3_LIFECYCLE_RULES.ASSETS_CLEANUP,
+				...(versioningLifecycleRule ? [versioningLifecycleRule] : [])
+			].filter(Boolean),
 			versioned: isProduction,
-			publicReadAccess: false,
+			publicReadAccess: S3_BUCKET_CONFIG.PUBLIC_READ_ACCESS,
 			blockPublicAccess: {
-				blockPublicAcls: true,
-				blockPublicPolicy: true,
-				ignorePublicAcls: true,
-				restrictPublicBuckets: true
+				blockPublicAcls: S3_BLOCK_PUBLIC_ACCESS.BLOCK_PUBLIC_ACLS,
+				blockPublicPolicy: S3_BLOCK_PUBLIC_ACCESS.BLOCK_PUBLIC_POLICY,
+				ignorePublicAcls: S3_BLOCK_PUBLIC_ACCESS.IGNORE_PUBLIC_ACLS,
+				restrictPublicBuckets: S3_BLOCK_PUBLIC_ACCESS.RESTRICT_PUBLIC_BUCKETS
 			},
-			enforceSSL: true, // Force HTTPS/TLS for all requests
-			transferAcceleration: false, // Disable transfer acceleration for security
-			objectOwnership: ObjectOwnership.BUCKET_OWNER_ENFORCED // Enforce bucket owner control
+			enforceSSL: S3_BUCKET_CONFIG.ENFORCE_SSL,
+			transferAcceleration: S3_BUCKET_CONFIG.TRANSFER_ACCELERATION,
+			objectOwnership: ObjectOwnership.BUCKET_OWNER_ENFORCED
 		})
 
 		// Note: avatarBucket property removed - use profileBucket instead
