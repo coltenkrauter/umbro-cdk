@@ -18,6 +18,7 @@
 		"cdk": "npm run node -- ./node_modules/aws-cdk/bin/cdk",
 		"deploy": "npm run cdk -- deploy --app 'npm run node -- ./lib/app.ts' --require-approval never",
 		"deploy-all": "npm run cdk -- deploy --app 'npm run node -- ./lib/app.ts' --require-approval never --all",
+		"deploy-staged": "npm run node -- ./scripts/deploy-staged.ts",
 		"diff": "npm run cdk -- --app 'npm run node -- ./lib/app.ts' diff",
 		"fix": "npm run lint -- --fix",
 		"lint": "npx eslint lib/**/*.ts",
