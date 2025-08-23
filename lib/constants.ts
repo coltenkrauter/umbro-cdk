@@ -26,8 +26,8 @@ export const S3_LIFECYCLE_DURATIONS = {
 
 // S3 Lifecycle Rules
 export const S3_LIFECYCLE_RULES = {
-	PROFILE_CLEANUP: {
-		id: 'profile-cleanup',
+	AVATAR_CLEANUP: {
+		id: 'avatar-cleanup',
 		enabled: true,
 		expiration: S3_LIFECYCLE_DURATIONS.ONE_YEAR,
 		transitions: [

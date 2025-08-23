@@ -15,10 +15,10 @@ export interface S3ConstructProps {
 }
 
 export class S3Construct extends Construct {
-	public readonly profileBucket: Bucket
-	public readonly assetsBucket: Bucket
-	// Backward compatibility - will be removed in next version
+	// Temporarily using avatarBucket only during transition
+	// TODO: Rename back to profileBucket in next version after Vercel OIDC is updated
 	public readonly avatarBucket: Bucket
+	public readonly assetsBucket: Bucket
 
 	constructor(scope: Construct, id: string, props: S3ConstructProps) {
 		super(scope, id)
@@ -30,9 +30,10 @@ export class S3Construct extends Construct {
 		const isProduction = stage === Stage.Production
 		const removalPolicy = isProduction ? REMOVAL_POLICIES.PRODUCTION : REMOVAL_POLICIES.DEVELOPMENT
 
-		// Profile bucket for user profile content (avatars, bio images, cover photos) - SECURITY HARDENED
-		this.profileBucket = new Bucket(this, 'ProfileBucket', {
-			bucketName: `${S3_BUCKET_NAMES.PROFILE}-${stageKey}`,
+		// Avatar bucket for user profile content (avatars, bio images, cover photos) - SECURITY HARDENED
+		// TODO: Rename back to ProfileBucket in next version after Vercel OIDC is updated
+		this.avatarBucket = new Bucket(this, 'AvatarBucket', {
+			bucketName: `${S3_BUCKET_NAMES.AVATAR}-${stageKey}`,
 			encryption: BucketEncryption.S3_MANAGED,
 			removalPolicy,
 			cors: [
@@ -44,7 +45,7 @@ export class S3Construct extends Construct {
 					exposedHeaders: CORS_CONFIG.EXPOSED_HEADERS
 				}
 			],
-			lifecycleRules: [S3_LIFECYCLE_RULES.PROFILE_CLEANUP],
+			lifecycleRules: [S3_LIFECYCLE_RULES.AVATAR_CLEANUP],
 			versioned: isProduction,
 			publicReadAccess: false,
 			blockPublicAccess: {
@@ -86,7 +87,7 @@ export class S3Construct extends Construct {
 			objectOwnership: ObjectOwnership.BUCKET_OWNER_ENFORCED // Enforce bucket owner control
 		})
 
-		// Backward compatibility - alias for profileBucket
-		this.avatarBucket = this.profileBucket
+		// Note: profileBucket temporarily removed during transition
+		// TODO: Add profileBucket back in next version after Vercel OIDC is updated
 	}
 }
