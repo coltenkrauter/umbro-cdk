@@ -136,11 +136,16 @@ export class Umbro extends Stack {
 		})
 
 		// S3 bucket outputs
-		// Note: Using avatarBucket during transition to avoid conflicts
-		// TODO: Rename back to profileBucket in next version after Vercel OIDC is updated
+		new CfnOutput(this, 'ProfileBucketName', {
+			value: this.storage.profileBucket.bucketName,
+			description: 'S3 Profile Bucket Name',
+			exportName: `UmbroStack-${stage}-ProfileBucketName`
+		})
+
+		// Backward compatibility - will be removed in next version
 		new CfnOutput(this, 'AvatarBucketName', {
 			value: this.storage.avatarBucket.bucketName,
-			description: 'S3 Avatar Bucket Name',
+			description: 'S3 Avatar Bucket Name (Backward Compatibility)',
 			exportName: `UmbroStack-${stage}-AvatarBucketName`
 		})
 
