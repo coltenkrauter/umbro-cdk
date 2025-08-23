@@ -136,16 +136,7 @@ export class Umbro extends Stack {
 		})
 
 		// S3 bucket outputs
-		// Both exports point to the same bucket during transition
-		
-		// Primary bucket export (existing)
-		new CfnOutput(this, 'AvatarBucketName', {
-			value: this.storage.profileBucket.bucketName,
-			description: 'S3 Profile Bucket Name (using existing avatar bucket)',
-			exportName: `UmbroStack-${stage}-AvatarBucketName`
-		})
-
-		// New profile bucket export (same bucket, different name)
+		// Profile bucket export (migrated from avatar naming)
 		new CfnOutput(this, 'ProfileBucketName', {
 			value: this.storage.profileBucket.bucketName,
 			description: 'S3 Profile Bucket Name',

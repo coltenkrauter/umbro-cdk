@@ -33,7 +33,7 @@ export class S3Construct extends Construct {
 		// Profile bucket for user content (avatars, bio images, cover photos) - SECURITY HARDENED
 		// Note: Using existing bucket name 'AvatarBucket' for compatibility
 		this.profileBucket = new Bucket(this, 'AvatarBucket', {
-			bucketName: `${S3_BUCKET_NAMES.AVATAR}-${stageKey}`,
+			bucketName: `${S3_BUCKET_NAMES.PROFILE}-${stageKey}`,
 			encryption: BucketEncryption.S3_MANAGED,
 			removalPolicy,
 			cors: [
@@ -45,7 +45,7 @@ export class S3Construct extends Construct {
 					exposedHeaders: CORS_CONFIG.EXPOSED_HEADERS
 				}
 			],
-			lifecycleRules: [S3_LIFECYCLE_RULES.AVATAR_CLEANUP],
+			lifecycleRules: [S3_LIFECYCLE_RULES.PROFILE_CLEANUP],
 			versioned: isProduction,
 			publicReadAccess: false,
 			blockPublicAccess: {
@@ -87,8 +87,6 @@ export class S3Construct extends Construct {
 			objectOwnership: ObjectOwnership.BUCKET_OWNER_ENFORCED // Enforce bucket owner control
 		})
 
-		// Backward compatibility - alias for profileBucket
-		// This maintains compatibility with existing code while using the new property name
-		this.avatarBucket = this.profileBucket
+		// Note: avatarBucket property removed - use profileBucket instead
 	}
 }
