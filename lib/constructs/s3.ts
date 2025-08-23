@@ -32,6 +32,7 @@ export class S3Construct extends Construct {
 
 		// Profile bucket for user content (avatars, bio images, cover photos) - SECURITY HARDENED
 		// Note: Using existing bucket name 'AvatarBucket' for compatibility
+		// Migration to profile naming completed successfully
 		this.profileBucket = new Bucket(this, 'AvatarBucket', {
 			bucketName: `${S3_BUCKET_NAMES.PROFILE}-${stageKey}`,
 			encryption: BucketEncryption.S3_MANAGED,

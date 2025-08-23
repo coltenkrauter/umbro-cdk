@@ -1,6 +1,6 @@
 {
 	"name": "@coltenkrauter/umbro-cdk",
-	"version": "0.12.21",
+	"version": "0.12.22",
 	"private": true,
 	"type": "module",
 	"keywords": [
