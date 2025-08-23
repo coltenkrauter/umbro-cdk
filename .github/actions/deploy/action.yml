@@ -40,4 +40,8 @@ runs:
     
     - name: Deploy Umbro stack second
       shell: bash
-      run: STAGE=${{ inputs.environment }} npm run cdk -- deploy Umbro --require-approval never --exclusively 
+      run: STAGE=${{ inputs.environment }} npm run cdk -- deploy Umbro --require-approval never --exclusively
+    
+    - name: Deploy all remaining stacks
+      shell: bash
+      run: STAGE=${{ inputs.environment }} npm run deploy-all 
