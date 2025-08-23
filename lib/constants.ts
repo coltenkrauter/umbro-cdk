@@ -89,8 +89,7 @@ export const DYNAMODB_TABLE_NAMES = {
 
 // S3 Bucket Names - Following TYPE_NAME_CONTEXT pattern
 export const BUCKET_NAMES = {
-	AVATAR: 'umbro-avatars', // Match existing deployed bucket name (plural)
-	PROFILE: 'umbro-profile', // Will be used in next version
+	AVATAR: 'umbro-avatars', // Keep existing name for compatibility
 	ASSETS: 'umbro-assets'
 } as const
 

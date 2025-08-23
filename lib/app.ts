@@ -49,15 +49,13 @@ grantDynamoDBAccess({
     ],
 })
 
-	// Grant S3 permissions for profile and asset buckets
-	// Note: Using avatarBucket for now to maintain compatibility
-	// TODO: Migrate to profileBucket in future version after gradual migration
-	grantS3BucketAccess({
-		role: vercelOidcStack.role,
-		buckets: [
-			umbro.storage.avatarBucket, // Maintain compatibility during transition
-			umbro.storage.assetsBucket,
-		],
-	})
+// Grant S3 permissions for profile and asset buckets
+grantS3BucketAccess({
+	role: vercelOidcStack.role,
+	buckets: [
+		umbro.storage.profileBucket, // Profile bucket (using existing avatar bucket name)
+		umbro.storage.assetsBucket,
+	],
+})
 
 

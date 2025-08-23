@@ -15,9 +15,9 @@ export interface S3ConstructProps {
 }
 
 export class S3Construct extends Construct {
-	// Temporarily using avatarBucket only during transition
-	// TODO: Rename back to profileBucket in next version after Vercel OIDC is updated
-	public readonly avatarBucket: Bucket
+	// Profile bucket for user content (avatars, bio images, cover photos)
+	// Note: Using existing bucket name 'umbro-avatars' for compatibility
+	public readonly profileBucket: Bucket
 	public readonly assetsBucket: Bucket
 
 	constructor(scope: Construct, id: string, props: S3ConstructProps) {
@@ -30,9 +30,9 @@ export class S3Construct extends Construct {
 		const isProduction = stage === Stage.Production
 		const removalPolicy = isProduction ? REMOVAL_POLICIES.PRODUCTION : REMOVAL_POLICIES.DEVELOPMENT
 
-		// Avatar bucket for user profile content (avatars, bio images, cover photos) - SECURITY HARDENED
-		// TODO: Rename back to ProfileBucket in next version after Vercel OIDC is updated
-		this.avatarBucket = new Bucket(this, 'AvatarBucket', {
+		// Profile bucket for user content (avatars, bio images, cover photos) - SECURITY HARDENED
+		// Note: Using existing bucket name 'AvatarBucket' for compatibility
+		this.profileBucket = new Bucket(this, 'AvatarBucket', {
 			bucketName: `${S3_BUCKET_NAMES.AVATAR}-${stageKey}`,
 			encryption: BucketEncryption.S3_MANAGED,
 			removalPolicy,
@@ -87,7 +87,8 @@ export class S3Construct extends Construct {
 			objectOwnership: ObjectOwnership.BUCKET_OWNER_ENFORCED // Enforce bucket owner control
 		})
 
-		// Note: profileBucket temporarily removed during transition
-		// TODO: Add profileBucket back in next version after Vercel OIDC is updated
+		// Backward compatibility - alias for profileBucket
+		// This maintains compatibility with existing code while using the new property name
+		this.avatarBucket = this.profileBucket
 	}
 }

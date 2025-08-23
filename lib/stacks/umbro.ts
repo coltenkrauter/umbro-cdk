@@ -141,8 +141,8 @@ export class Umbro extends Stack {
 		
 		// Primary bucket export
 		new CfnOutput(this, 'AvatarBucketName', {
-			value: this.storage.avatarBucket.bucketName,
-			description: 'S3 Avatar Bucket Name',
+			value: this.storage.profileBucket.bucketName,
+			description: 'S3 Profile Bucket Name (using existing avatar bucket)',
 			exportName: `UmbroStack-${stage}-AvatarBucketName`
 		})
 
