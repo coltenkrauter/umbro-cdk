@@ -49,35 +49,32 @@ grantDynamoDBAccess({
     ],
 })
 
-// TEMPORARY: Comment out S3 permissions entirely to break the dependency
-// We'll add them back after both stacks are deployed independently
-// 
-// import { PolicyStatement, Effect } from 'aws-cdk-lib/aws-iam'
-// 
-// const s3PolicyStatement = new PolicyStatement({
-// 	effect: Effect.ALLOW,
-// 	actions: [
-// 		's3:GetObject',
-// 		's3:PutObject',
-// 		's3:DeleteObject',
-// 		's3:ListBucket',
-// 		's3:GetBucketLocation',
-// 		's3:GetObjectVersion',
-// 		's3:PutObjectAcl',
-// 		's3:GetObjectAcl',
-// 		's3:GetBucketVersioning',
-// 		's3:PutBucketVersioning'
-// 	],
-// 	resources: [
-// 		`arn:aws:s3:::umbro-profile-${config.stage.toLowerCase()}`,
-// 		`arn:aws:s3:::umbro-profile-${config.stage.toLowerCase()}/*`,
-// 		`arn:aws:s3:::umbro-assets-${config.stage.toLowerCase()}`,
-// 		`arn:aws:s3:::umbro-assets-${config.stage.toLowerCase()}/*`,
-// 		`arn:aws:s3:::umbro-avatars-${config.stage.toLowerCase()}`,
-// 		`arn:aws:s3:::umbro-avatars-${config.stage.toLowerCase()}/*`
-// 	]
-// })
-// 
-// vercelOidcStack.role.addToPolicy(s3PolicyStatement)
+// Grant S3 permissions using inline policies to avoid cross-stack references
+import { PolicyStatement, Effect } from 'aws-cdk-lib/aws-iam'
+
+// Grant S3 permissions for profile and assets buckets
+const s3PolicyStatement = new PolicyStatement({
+	effect: Effect.ALLOW,
+	actions: [
+		's3:GetObject',
+		's3:PutObject',
+		's3:DeleteObject',
+		's3:ListBucket',
+		's3:GetBucketLocation',
+		's3:GetObjectVersion',
+		's3:PutObjectAcl',
+		's3:GetObjectAcl',
+		's3:GetBucketVersioning',
+		's3:PutBucketVersioning'
+	],
+	resources: [
+		`arn:aws:s3:::umbro-profile-${config.stage.toLowerCase()}`,
+		`arn:aws:s3:::umbro-profile-${config.stage.toLowerCase()}/*`,
+		`arn:aws:s3:::umbro-assets-${config.stage.toLowerCase()}`,
+		`arn:aws:s3:::umbro-assets-${config.stage.toLowerCase()}/*`
+	]
+})
+
+vercelOidcStack.role.addToPolicy(s3PolicyStatement)
 
 
