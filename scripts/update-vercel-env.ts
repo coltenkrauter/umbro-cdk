@@ -49,8 +49,8 @@ interface CloudFormationOutputs {
 	UserPermissionsTableName?: string
 	AuditLogsTableName?: string
 	PlansTableName?: string
-	// Note: ProfileBucketName temporarily removed to avoid deployment conflicts
-	AvatarBucketName?: string // Primary bucket
+	ProfileBucketName?: string
+	AvatarBucketName?: string // Backward compatibility
 	AssetsBucketName?: string
 }
 
@@ -205,6 +205,9 @@ class VercelEnvironmentUpdater {
 							break
 						case 'PlansTableName':
 							outputs.PlansTableName = output.OutputValue
+							break
+						case 'ProfileBucketName':
+							outputs.ProfileBucketName = output.OutputValue
 							break
 						case 'AvatarBucketName':
 							outputs.AvatarBucketName = output.OutputValue
@@ -423,9 +426,16 @@ class VercelEnvironmentUpdater {
         }
 
         		// S3 bucket names - following TYPE_NAME_CONTEXT pattern
-		// Note: ProfileBucketName temporarily removed to avoid deployment conflicts
-		
-		// Primary bucket
+		if (outputs.ProfileBucketName) {
+			envVars.push({
+				key: 'BUCKET_NAME_PROFILE',
+				value: outputs.ProfileBucketName,
+				target: this.targets.join(','),
+				type: 'encrypted' // S3 bucket names should be encrypted for security
+			})
+		}
+
+		// Backward compatibility - will be removed in next version
 		if (outputs.AvatarBucketName) {
 			envVars.push({
 				key: 'BUCKET_NAME_AVATAR',
