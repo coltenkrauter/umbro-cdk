@@ -49,14 +49,36 @@ grantDynamoDBAccess({
     ],
 })
 
-// Grant S3 permissions for profile and asset buckets
-// Temporarily commented out to avoid cross-stack reference issues during bucket rename
-// grantS3BucketAccess({
-// 	role: vercelOidcStack.role,
-// 	buckets: [
-// 		umbro.storage.profileBucket, // Profile bucket (using existing avatar bucket name)
-// 		umbro.storage.assetsBucket,
-// 	],
-// })
+// Grant S3 permissions using inline policies to avoid cross-stack references
+// This grants access to the S3 buckets without creating CloudFormation exports
+import { PolicyStatement, Effect } from 'aws-cdk-lib/aws-iam'
+
+// Grant S3 permissions for profile and assets buckets
+const s3PolicyStatement = new PolicyStatement({
+	effect: Effect.ALLOW,
+	actions: [
+		's3:GetObject',
+		's3:PutObject',
+		's3:DeleteObject',
+		's3:ListBucket',
+		's3:GetBucketLocation',
+		's3:GetObjectVersion',
+		's3:PutObjectAcl',
+		's3:GetObjectAcl',
+		's3:GetBucketVersioning',
+		's3:PutBucketVersioning'
+	],
+	resources: [
+		`arn:aws:s3:::umbro-profile-${config.stage.toLowerCase()}`,
+		`arn:aws:s3:::umbro-profile-${config.stage.toLowerCase()}/*`,
+		`arn:aws:s3:::umbro-assets-${config.stage.toLowerCase()}`,
+		`arn:aws:s3:::umbro-assets-${config.stage.toLowerCase()}/*`,
+		// Also include old bucket names temporarily for migration
+		`arn:aws:s3:::umbro-avatars-${config.stage.toLowerCase()}`,
+		`arn:aws:s3:::umbro-avatars-${config.stage.toLowerCase()}/*`
+	]
+})
+
+vercelOidcStack.role.addToPolicy(s3PolicyStatement)
 
 
