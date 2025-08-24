@@ -77,4 +77,15 @@ const s3PolicyStatement = new PolicyStatement({
 
 vercelOidcStack.role.addToPolicy(s3PolicyStatement)
 
+// Grant Rekognition permissions for image moderation
+const rekognitionPolicyStatement = new PolicyStatement({
+	effect: Effect.ALLOW,
+	actions: [
+		'rekognition:DetectModerationLabels'
+	],
+	resources: ['*'] // Rekognition doesn't support resource-level permissions
+})
+
+vercelOidcStack.role.addToPolicy(rekognitionPolicyStatement)
+
 

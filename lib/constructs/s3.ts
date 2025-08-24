@@ -1,4 +1,5 @@
 import { Bucket, BucketEncryption, HttpMethods, ObjectOwnership } from 'aws-cdk-lib/aws-s3'
+import { PolicyStatement, Effect, ServicePrincipal } from 'aws-cdk-lib/aws-iam'
 import { Construct } from 'constructs'
 import { Stage } from '@krauters/structures'
 import { 
@@ -111,5 +112,34 @@ export class S3Construct extends Construct {
 		})
 
 		// Note: avatarBucket property removed - use profileBucket instead
+		
+		// Add Rekognition permissions to both buckets
+		this.addRekognitionPermissions()
+	}
+	
+	/**
+	 * Add Rekognition permissions for image moderation
+	 */
+	private addRekognitionPermissions(): void {
+		// Grant Rekognition service access to read objects from our buckets
+		const rekognitionReadPolicy = new PolicyStatement({
+			effect: Effect.ALLOW,
+			actions: [
+				's3:GetObject',
+				's3:GetObjectVersion'
+			],
+			resources: [
+				`${this.profileBucket.bucketArn}/*`,
+				`${this.assetsBucket.bucketArn}/*`
+			],
+			principals: [new ServicePrincipal('rekognition.amazonaws.com')]
+		})
+		
+		// Add bucket policies to allow Rekognition to read images
+		this.profileBucket.addToResourcePolicy(rekognitionReadPolicy)
+		this.assetsBucket.addToResourcePolicy(rekognitionReadPolicy)
+		
+		// Note: The Lambda/app needs IAM permissions for rekognition:DetectModerationLabels
+		// This is handled by the execution role or environment credentials
 	}
 }
