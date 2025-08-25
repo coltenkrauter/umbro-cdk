@@ -286,6 +286,14 @@ export class DynamoDBConstruct extends Construct {
 				pointInTimeRecoverySpecification: { pointInTimeRecoveryEnabled: DYNAMODB_CONFIG.POINT_IN_TIME_RECOVERY }
 			})
 		})
+		// GSI for querying visitors by application and stage
+		this.visitorsTable.addGlobalSecondaryIndex({
+			indexName: 'VisitorsByApplicationIndex',
+			partitionKey: { name: 'applicationId', type: AttributeType.STRING },
+			sortKey: { name: 'stage', type: AttributeType.STRING }
+		})
+
+		// GSI for querying visitors by IP (for deduplication)
 		this.visitorsTable.addGlobalSecondaryIndex({
 			indexName: 'VisitorsByIpIndex',
 			partitionKey: { name: 'ip', type: AttributeType.STRING },
