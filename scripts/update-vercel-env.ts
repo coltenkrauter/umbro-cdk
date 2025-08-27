@@ -16,6 +16,9 @@
  * - AWS_ROLE_ARN: AWS Role ARN for Vercel OIDC
  * - USERS_TABLE_NAME: DynamoDB Users table name
  * - SERVICE_TOKENS_TABLE_NAME: DynamoDB Service Tokens table name
+ * 
+ * Optional environment variables:
+ * - EMAIL_NOTIFICATION_EMAIL: Email address for system notifications (if set, will be synced to Vercel)
  */
 
 import { CloudFormationClient, DescribeStacksCommand } from '@aws-sdk/client-cloudformation'
@@ -52,6 +55,10 @@ interface CloudFormationOutputs {
 	// S3 bucket names - migrated to profile naming
 	ProfileBucketName?: string // Profile bucket export
 	AssetsBucketName?: string
+	// Email infrastructure outputs
+	EmailTopicArn?: string
+	EmailLogGroupName?: string
+	EmailRoleArn?: string
 }
 
 class VercelEnvironmentUpdater {
@@ -212,6 +219,16 @@ class VercelEnvironmentUpdater {
 						case 'AssetsBucketName':
 							outputs.AssetsBucketName = output.OutputValue
 							break
+						// Email infrastructure outputs
+						case 'EmailTopicArn':
+							outputs.EmailTopicArn = output.OutputValue
+							break
+						case 'EmailLogGroupName':
+							outputs.EmailLogGroupName = output.OutputValue
+							break
+						case 'EmailRoleArn':
+							outputs.EmailRoleArn = output.OutputValue
+							break
 					}
 				}
 			})
@@ -227,9 +244,12 @@ class VercelEnvironmentUpdater {
 			console.log(`   Account ID: ${outputs.AccountId}`)
 			console.log(`   Region: ${outputs.Region}`)
 			console.log(`   Role ARN: ${outputs.VercelRoleArn}`)
-						console.log(`   Users Table: ${outputs.UsersTableName}`)
+			console.log(`   Users Table: ${outputs.UsersTableName}`)
 			console.log(`   Service Tokens Table: ${outputs.ServiceTokensTableName}`)
 			console.log(`   Rate Limit Table: ${outputs.RateLimitTableName}`)
+			console.log(`   Email Topic ARN: ${outputs.EmailTopicArn}`)
+			console.log(`   Email Log Group: ${outputs.EmailLogGroupName}`)
+			console.log(`   Email Role ARN: ${outputs.EmailRoleArn}`)
 
 			return outputs
 		} catch (error) {
@@ -439,6 +459,46 @@ class VercelEnvironmentUpdater {
                 value: outputs.AssetsBucketName,
                 target: this.targets.join(','),
                 type: 'encrypted' // S3 bucket names should be encrypted for security
+            })
+        }
+
+        // Email infrastructure environment variables
+        // These enable the email system to work with the deployed AWS infrastructure
+        if (outputs.EmailTopicArn) {
+            envVars.push({
+                key: 'EMAIL_SNS_TOPIC_ARN',
+                value: outputs.EmailTopicArn,
+                target: this.targets.join(','),
+                type: 'encrypted' // SNS topic ARN should be encrypted for security
+            })
+        }
+
+        if (outputs.EmailLogGroupName) {
+            envVars.push({
+                key: 'EMAIL_CLOUDWATCH_LOG_GROUP',
+                value: outputs.EmailLogGroupName,
+                target: this.targets.join(','),
+                type: 'encrypted' // Log group name should be encrypted for security
+            })
+        }
+
+        if (outputs.EmailRoleArn) {
+            envVars.push({
+                key: 'EMAIL_IAM_ROLE_ARN',
+                value: outputs.EmailRoleArn,
+                target: this.targets.join(','),
+                type: 'encrypted' // IAM role ARN should be encrypted for security
+            })
+        }
+
+        // Optional notification email (if set in CDK)
+        const notificationEmail = process.env.EMAIL_NOTIFICATION_EMAIL
+        if (notificationEmail) {
+            envVars.push({
+                key: 'EMAIL_NOTIFICATION_EMAIL',
+                value: notificationEmail,
+                target: this.targets.join(','),
+                type: 'encrypted' // Email addresses should be encrypted for privacy
             })
         }
 
