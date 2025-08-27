@@ -4,6 +4,7 @@ import { Stage } from '@krauters/structures'
 
 import { DynamoDBConstruct } from '../constructs/dynamodb.js'
 import { S3Construct } from '../constructs/s3.js'
+import { EmailConstruct } from '../constructs/email.js'
 
 export interface UmbroProps extends StackProps {
 	stage: Stage
@@ -15,6 +16,7 @@ export interface UmbroProps extends StackProps {
 export class Umbro extends Stack {
 	public readonly database: DynamoDBConstruct
 	public readonly storage: S3Construct
+	public readonly email: EmailConstruct
 
 	constructor(scope: Construct, id: string, props: UmbroProps) {
 		super(scope, id, props)
@@ -27,6 +29,11 @@ export class Umbro extends Stack {
 
 		this.storage = new S3Construct(this, 'Storage', {
 			stage
+		})
+
+		this.email = new EmailConstruct(this, 'Email', {
+			stage,
+			notificationEmail: process.env.EMAIL_NOTIFICATION_EMAIL
 		})
 
 		// CloudFormation outputs for Vercel environment variables
@@ -147,6 +154,26 @@ export class Umbro extends Stack {
 			value: this.storage.assetsBucket.bucketName,
 			description: 'S3 Assets Bucket Name',
 			exportName: `UmbroStack-${stage}-AssetsBucketName`
+		})
+
+		// Email infrastructure outputs
+
+		new CfnOutput(this, 'EmailTopicArn', {
+			value: this.email.emailTopic.topicArn,
+			description: 'SNS Topic ARN for email notifications',
+			exportName: `UmbroStack-${stage}-EmailTopicArn`
+		})
+
+		new CfnOutput(this, 'EmailLogGroupName', {
+			value: this.email.emailLogGroup.logGroupName,
+			description: 'CloudWatch Log Group for email logs',
+			exportName: `UmbroStack-${stage}-EmailLogGroupName`
+		})
+
+		new CfnOutput(this, 'EmailRoleArn', {
+			value: this.email.emailRole.roleArn,
+			description: 'IAM Role ARN for email operations',
+			exportName: `UmbroStack-${stage}-EmailRoleArn`
 		})
 	}
 
